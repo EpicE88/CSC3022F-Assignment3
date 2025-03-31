@@ -14,6 +14,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <memory>
 #include "ConnectedComponent.h"
 
 #ifndef _PGMIP_H
@@ -24,10 +25,12 @@ private:
 
     unsigned char * buffer;
     int width, height;
+    int maxPixelValue;
+    std::vector<std::unique_ptr<ConnectedComponent>> components;
+    int nextComponentID = 0;
 
-public:
 
-    
+public: 
 
     //Big 6
 

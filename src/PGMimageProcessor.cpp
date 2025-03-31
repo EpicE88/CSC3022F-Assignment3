@@ -93,3 +93,44 @@ void PGMimageProcessor::read(const string& fileName){
 
     ifs.close();
 }
+
+/**
+ * Method that extracts all the connected components, based on the supplied threshold and excluding any components
+ * less than minValidSize
+ * @param threshold: user-defined threshold
+ * @param minValidSize: specified minimum valid size of connected components
+ * 
+ */
+int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSize){
+
+
+    //Convert grayscale image pixels to 255 or 0
+    for (int i = 0; i < (width * height); i++){
+        if (buffer[i] >= threshold){
+            buffer[i] = 255;
+        }
+        else{
+            buffer[i] = 0;
+        }
+    }
+
+    //Only do BFS on pixels that are 255
+    for (int y = 0; y < height; y++){
+        for (int x = 0; x < width; x++){
+            if (buffer[y * width + x] == 255){
+                ConnectedComponent component;
+                bfs(x, y, component);
+
+
+                // Only store components that are less than greater than minValid size
+                if (component.getNumPixels() >= minValidSize){
+
+                    //Assign a permanent unique ID to the component
+                    component.setID(nextComponentID++);
+                    components.push_back(std::make_unique<ConnectedComponent>(component));
+                }
+            }
+        }
+    }
+
+}
