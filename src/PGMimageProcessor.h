@@ -14,6 +14,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include "ConnectedComponent.h"
 
 #ifndef _PGMIP_H
 #define _PGMIP_H
@@ -23,7 +24,6 @@ private:
 
     unsigned char * buffer;
     int width, height;
-    unsigned char * components;
 
 public:
 
@@ -62,6 +62,28 @@ public:
     PGMimageProcessor & operator=(PGMimageProcessor && rhs);
 
 
+
+    /**
+     * PGM image reading functionality
+     * Author: Patrick Marias, University of Cape Town (CSC3022F)
+     * Reused from Assignment 2 resources
+     */
+
+
+    /**
+     * Method that reads PGM image
+     * @param fileName: Name of the PGM image being read
+     */
+    void read(const std::string & fileName);
+
+
+    /**
+     * Method that sets image data from existing sized buffer
+     * @param data: image data
+     * @param wd: width
+     * @param ht: height
+     */
+    void setImageData(unsigned char* data, int wd, int ht);
 
     // Core methods
 
