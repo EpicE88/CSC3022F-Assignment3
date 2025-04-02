@@ -56,31 +56,23 @@ public:
     /**
      * Get method. Returns numPixels
      */
-    int getNumPixels() const{
-        return numPixels;
-    }
+    int getNumPixels() const;
 
     /**
      * Get Method. returns ID
      */
-    int getID() const{
-        return id;
-    }
+    int getID()const;
 
     /**
      * Get Method. Returns the Pixel Coordinates in the form of a pair
      */
-    std::vector<std::pair<int,int>> getPixels() const{
-        return pixels;
-    }
+    std::vector<std::pair<int,int>> getPixels() const;
 
     
     /**
      * Set method. Sets the ID
      */
-    void setID(int id){
-        id = id;
-    }
+    void setID(int id);
 
 
 };
