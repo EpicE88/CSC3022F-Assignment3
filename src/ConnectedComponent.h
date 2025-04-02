@@ -51,6 +51,29 @@ public:
      * Move Assignment Operator
      */
     ConnectedComponent & operator=(ConnectedComponent && rhs);
+
+
+    /**
+     * Get method. Returns numPixels
+     */
+    int getNumPixels(){
+        return numPixels;
+    }
+
+    /**
+     * Get Method. returns ID
+     */
+    int getID(){
+        return id;
+    }
+
+    
+    /**
+     * Set method. Sets the ID
+     */
+    void setID(int id){
+        id = id;
+    }
 };
 
 #endif

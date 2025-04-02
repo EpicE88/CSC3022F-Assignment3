@@ -133,4 +133,30 @@ int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSi
         }
     }
 
+    return components.size();
+
 }
+
+/**
+ * Method that iterates through container of components and filters all the components which do not obey the size 
+ * criteria
+ * @param minSize: minimum size criteria
+ * @param maxSize: maximum size criteria
+ */
+int PGMimageProcessor::filterComponentsBySize(int minSize, int maxSize){
+    
+    //Iterated with an iterator through all stored components
+    for(vector<std::unique_ptr<ConnectedComponent>>::const_iterator it = components.begin(); it != components.end(); ++it){
+        int pixels = (*it)->getNumPixels();
+        
+        //Remove any component that is not in the size criteria
+        if (pixels < minSize || pixels > maxSize){
+            components.erase(it);
+        }
+
+    }
+
+    return components.size();
+}
+
+
