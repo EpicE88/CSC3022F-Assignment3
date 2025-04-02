@@ -246,6 +246,13 @@ int PGMimageProcessor::getSmallestSize(void) const{
     return minPixelNum;
 }
 
+/**
+ * Method that prints the data for a component to std::cout 
+ * @param component: the component that will be printed
+ */
+void PGMimageProcessor::printComponentData(const ConnectedComponent & component) const{
+    cout << component.getID() << ", " << component.getNumPixels();
+} 
 
 
 
