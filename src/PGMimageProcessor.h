@@ -115,6 +115,11 @@ public:
     bool writeComponents(const std::string & outFileName);
 
     /**
+     * Method that return s the number of components
+     */
+    int getComponentCount(void) const;
+
+    /**
      * Method that returns the number of pixels in largest component
      */
     int getLargestSize(void) const;

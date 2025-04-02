@@ -208,6 +208,13 @@ bool PGMimageProcessor::writeComponents(const std::string & outFileName){
 }
 
 /**
+ * Method that return s the number of components
+ */
+int PGMimageProcessor::getComponentCount(void) const{
+    return components.size();
+}
+
+/**
  * Method that returns the number of pixels in largest component
  */
 int PGMimageProcessor::getLargestSize(void) const{
@@ -222,6 +229,8 @@ int PGMimageProcessor::getLargestSize(void) const{
 
     return maxPixelNum;
 }
+
+
 
 
 
