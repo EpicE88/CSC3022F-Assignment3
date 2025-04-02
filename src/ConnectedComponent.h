@@ -17,7 +17,7 @@ class ConnectedComponent{
 private:
     int numPixels;
     int id;
-    std::vector<std::pair<int, int>> pairs;
+    std::vector<std::pair<int, int>> pixels;
 
 public:
     //Big 6
@@ -67,6 +67,13 @@ public:
         return id;
     }
 
+    /**
+     * Get Method. Returns the Pixel Coordinates in the form of a pair
+     */
+    std::vector<std::pair<int,int>> getPixels(){
+        return pixels;
+    }
+
     
     /**
      * Set method. Sets the ID
@@ -74,6 +81,8 @@ public:
     void setID(int id){
         id = id;
     }
+
+
 };
 
 #endif

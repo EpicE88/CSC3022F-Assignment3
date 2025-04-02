@@ -119,7 +119,8 @@ int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSi
         for (int x = 0; x < width; x++){
             if (buffer[y * width + x] == 255){
                 ConnectedComponent component;
-                bfs(x, y, component);
+
+                //bfs(x, y, component);
 
 
                 // Only store components that are less than greater than minValid size
@@ -158,5 +159,54 @@ int PGMimageProcessor::filterComponentsBySize(int minSize, int maxSize){
 
     return components.size();
 }
+
+/**
+ * Method that creates a new PGM file which contains all available components
+ * @param outFileName: name of the output PGM file
+ */
+bool PGMimageProcessor::writeComponents(const std::string & outFileName){
+
+    //No components to write
+    if (components.empty()){
+        return false;
+    }
+
+    //Initialise output image buffer filled with 0s
+    vector<unsigned char> outputBuffer(width * height, 0);
+
+
+    //Set pixels of components to 255
+    for (const unique_ptr<ConnectedComponent> & component: components){
+        for (const auto & pixelCoord: component->getPixels()){
+            int x = pixelCoord.first;
+            int y = pixelCoord.second;
+            outputBuffer[y * width + x] = 255;
+        }
+    }
+
+    //Write output buffer to file
+    ofstream ofs(outFileName, ios::binary);
+
+    if (!ofs){
+        cerr << "Unable to open PGM output file " << outFileName << endl;
+        return false;
+    }
+
+    ofs << "P5" << width << " " << height << endl << 255 << endl;
+    ofs.write(reinterpret_cast<const char*>(outputBuffer.data()), width * height);
+
+    if (!ofs){
+        cerr << "Error writing binary block of PGM.\n";
+
+        return false;
+    }
+
+    ofs.close();
+
+    return true;
+
+}
+
+
 
 
