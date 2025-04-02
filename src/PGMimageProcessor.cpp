@@ -177,7 +177,7 @@ bool PGMimageProcessor::writeComponents(const std::string & outFileName){
 
     //Set pixels of components to 255
     for (const unique_ptr<ConnectedComponent> & component: components){
-        for (const auto & pixelCoord: component->getPixels()){
+        for (const pair<int,int> & pixelCoord: component->getPixels()){
             int x = pixelCoord.first;
             int y = pixelCoord.second;
             outputBuffer[y * width + x] = 255;
@@ -205,6 +205,22 @@ bool PGMimageProcessor::writeComponents(const std::string & outFileName){
 
     return true;
 
+}
+
+/**
+ * Method that returns the number of pixels in largest component
+ */
+int PGMimageProcessor::getLargestSize(void) const{
+
+    int maxPixelNum = -999;
+
+    for (const unique_ptr<ConnectedComponent> & component: components){
+        if (component->getNumPixels() >= maxPixelNum){
+            maxPixelNum = component->getNumPixels();
+        }
+    }
+
+    return maxPixelNum;
 }
 
 
