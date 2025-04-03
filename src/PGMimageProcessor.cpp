@@ -205,6 +205,10 @@ int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSi
 
     //TODO: Delete the original image memory after processing
 
+    //Delete original image from memory after processing
+    inputBuffer.clear();
+    inputBuffer.shrink_to_fit();
+
     return components.size();
 
 }
