@@ -136,6 +136,15 @@ public:
 
     void printComponentData(const ConnectedComponent & component) const; 
 
+    /**
+     * Method that uses Breadth-First Search to find all connected foreground pixels of a component
+     * @param x: x-coordinate of pixel
+     * @param y: y-coordinate of pixel 
+     * @param component: the connected component
+     */
+
+     void bfs(int x, int y, ConnectedComponent & component);
+
 };
 
 #endif

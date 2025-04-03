@@ -55,6 +55,7 @@ ConnectedComponent::ConnectedComponent(ConnectedComponent && rhs): numPixels(rhs
  */
 ConnectedComponent & ConnectedComponent::operator=(ConnectedComponent && rhs){
 
+    //Check for self assignment
     if (this != &rhs){
         numPixels = rhs.numPixels;
         id = rhs.id;
@@ -63,8 +64,6 @@ ConnectedComponent & ConnectedComponent::operator=(ConnectedComponent && rhs){
 
     return *this;
 }
-
-
 
 /**
  * Get method. Returns numPixels
@@ -92,4 +91,13 @@ std::vector<std::pair<int,int>> ConnectedComponent::getPixels() const{
  */
 void ConnectedComponent::setID(int id){
     id = id;
+}
+
+/**
+ * Method that adds a pixels to the pixels vector
+ * @param x: x coordinate of pixel being added
+ * @param y: y coordinate of pixel being added
+ */
+void ConnectedComponent::addPixel(int x, int y){
+    pixels.push_back(std::make_pair(x, y));
 }

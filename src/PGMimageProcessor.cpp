@@ -89,7 +89,7 @@ PGMimageProcessor & PGMimageProcessor::operator=(PGMimageProcessor && rhs){
  * PGM image reading functionality
  * Author: Patrick Marias, University of Cape Town (CSC3022F)
  * Reused from Assignment 2 resources
- * Modified buffer to a vector.
+ * Modified: buffer to a vector.
  */
 
 
@@ -191,12 +191,10 @@ int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSi
             if (inputBuffer[y * width + x] == 255){
                 ConnectedComponent component;
 
-                //bfs(x, y, component);
-
+                bfs(x, y, component);
 
                 // Only store components that are less than greater than minValid size
                 if (component.getNumPixels() >= minValidSize){
-
                     //Assign a permanent unique ID to the component
                     component.setID(nextComponentID++);
                     components.push_back(std::make_unique<ConnectedComponent>(component));
@@ -204,6 +202,8 @@ int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSi
             }
         }
     }
+
+    //TODO: Delete the original image memory after processing
 
     return components.size();
 
@@ -325,6 +325,55 @@ void PGMimageProcessor::printComponentData(const ConnectedComponent & component)
     cout << component.getID() << ", " << component.getNumPixels() << endl;
 } 
 
+/**
+ * Method that uses Breadth-First Search to find all connected foreground pixels of a component
+ * @param x: x-coordinate of pixel
+ * @param x: y-coordinate of pixel
+ * @param component: the connected component 
+ */
+void PGMimageProcessor::bfs(int x, int y, ConnectedComponent & component){
+    
+    //Initialise the queue
+    std::queue<std::pair<int,int>> q;
+
+    //Push starting pixel
+    q.push({x, y});
+    
+    //Mark starting pixel as visited
+    inputBuffer[y * width + x] = 0; 
+
+    //Process pixels until there are non in the queue
+    while(!q.empty()){
+        std::pair<int, int> current = q.front();
+
+        int xcoord = current.first;
+        int ycoord = current.second;
+        q.pop(); //Remove from the queue
+
+        //Add pixel to component
+        component.addPixel(xcoord, ycoord);
+
+        //Check the N,S,E,W neighbours
+        int nOffsets[4][2] = {{0,1}, {1,0}, {0, -1}, {-1, 0}};
+
+        for (int i = 0; i < 4; i++){
+            int xNeighbour = xcoord + nOffsets[i][0];
+            int yNeighbour = ycoord + nOffsets[i][1];
+
+            //Check if neighbour is withn boundaries
+            if ((xNeighbour >= 0 && xNeighbour < width) && (yNeighbour >= 0 && yNeighbour < height)){
+                //Check if neighbour is unvisited
+                if (inputBuffer[yNeighbour * width + xNeighbour] == 255){
+                    inputBuffer[yNeighbour * width + xNeighbour] = 0; // mark as visited
+                    q.push(std::make_pair(xNeighbour, yNeighbour));
+                }
+            }
+        }
+
+        
+    }
+
+}
 
 
 

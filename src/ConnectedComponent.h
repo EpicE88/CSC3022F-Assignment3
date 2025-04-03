@@ -9,6 +9,7 @@
  */
 
 #include <vector>
+#include <queue>
 
 #ifndef _CC_H
 #define _CC_H
@@ -73,6 +74,13 @@ public:
      * Set method. Sets the ID
      */
     void setID(int id);
+
+    /**
+     * Method that adds a pixels to the pixels vector
+     * @param x: x coordinate of pixel being added
+     * @param y: y coordinate of pixel being added
+     */
+    void addPixel(int x, int y);
 
 
 };
