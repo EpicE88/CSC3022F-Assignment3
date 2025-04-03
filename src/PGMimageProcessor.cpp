@@ -15,16 +15,86 @@
 
 using namespace std;
 
+//Big 6
+
+/**
+ * Default constructor
+ */
+PGMimageProcessor::PGMimageProcessor(): inputBuffer(), width(0), height(0) , nextComponentID(0), components(){}
+
+/**
+ * Destructor
+ */
+PGMimageProcessor::~PGMimageProcessor(){}
+
+/**
+ * Copy Constructor
+ */
+PGMimageProcessor::PGMimageProcessor(const PGMimageProcessor & other): inputBuffer(other.inputBuffer), width(other.width), height(other.height), 
+    nextComponentID(other.nextComponentID){
+
+        //Can't make a copy of a unique ptr. 
+        //Create a new uniqe_ptr that owns a copy of the ConnectedComponent
+        for (const std::unique_ptr<ConnectedComponent> & comp: other.components){
+            components.push_back(std::make_unique<ConnectedComponent>(*comp));
+        }
+    }
+
+/**
+ * Copy Assignment Operator
+ */
+PGMimageProcessor & PGMimageProcessor::operator=(const PGMimageProcessor & other){
+
+    //Check for self assignment
+    if (this != &other){
+        inputBuffer = other.inputBuffer;
+        width = other.width;
+        height = other.height;
+        nextComponentID = other.nextComponentID;
+
+        //Can't make a copy of a unique ptr. 
+        //Create a new uniqe_ptr that owns a copy of the ConnectedComponent
+        for (const std::unique_ptr<ConnectedComponent> & comp: other.components){
+            components.push_back(std::make_unique<ConnectedComponent>(*comp));
+        }
+    }
+
+    return *this;
+}
+
+/**
+ * Move Constructor
+ */
+PGMimageProcessor::PGMimageProcessor(PGMimageProcessor && rhs): inputBuffer(std::move(rhs.inputBuffer)), 
+    width(rhs.width), height(rhs.height), components(std::move(rhs.components)), nextComponentID(rhs.nextComponentID){}
+
+/**
+ * Move Assignment Operator
+ */
+PGMimageProcessor & PGMimageProcessor::operator=(PGMimageProcessor && rhs){
+
+    //Check for self assignment
+    if (this != &rhs){
+        inputBuffer = std::move(rhs.inputBuffer);
+        width = rhs.width;
+        height = rhs.height;
+        components = std::move(rhs.components);
+        nextComponentID = rhs.nextComponentID;
+    }
+
+    return *this;
+}
 
 /**
  * PGM image reading functionality
  * Author: Patrick Marias, University of Cape Town (CSC3022F)
  * Reused from Assignment 2 resources
+ * Modified buffer to a vector.
  */
 
 
 /**
- * Method that sets image data from existing sized buffer
+ * Method that sets image data from existing sized inputBuffer
  * @param data: image data
  * @param wd: width
  * @param ht: height
@@ -35,10 +105,11 @@ void PGMimageProcessor::setImageData(unsigned char* data, int wd, int ht){
         cerr << "setImageData() invalid data specified - aborted.\n";
         return;
     }
-    if (buffer) delete[] buffer;
-    buffer = new unsigned char[wd * ht];
+
+
+    inputBuffer.assign(data, data + (wd * ht));
     width = wd; height = ht;
-    for (size_t i = 0; i < wd * ht; ++i) buffer[i] = data[i];
+    for (size_t i = 0; i < wd * ht; ++i) inputBuffer[i] = data[i];
 }
 
 
@@ -83,8 +154,8 @@ void PGMimageProcessor::read(const string& fileName){
     }
     // start of binary block
 
-    buffer = new unsigned char[width * height];
-    ifs.read(reinterpret_cast<char*>(buffer), width * height);
+    inputBuffer.resize(width * height);
+    ifs.read(reinterpret_cast<char*>(inputBuffer.data()), width * height);
 
     if (!ifs)
     {
@@ -106,18 +177,18 @@ int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSi
 
     //Convert grayscale image pixels to 255 or 0
     for (int i = 0; i < (width * height); i++){
-        if (buffer[i] >= threshold){
-            buffer[i] = 255;
+        if (inputBuffer[i] >= threshold){
+            inputBuffer[i] = 255;
         }
         else{
-            buffer[i] = 0;
+            inputBuffer[i] = 0;
         }
     }
 
     //Only do BFS on pixels that are 255
     for (int y = 0; y < height; y++){
         for (int x = 0; x < width; x++){
-            if (buffer[y * width + x] == 255){
+            if (inputBuffer[y * width + x] == 255){
                 ConnectedComponent component;
 
                 //bfs(x, y, component);
@@ -171,7 +242,7 @@ bool PGMimageProcessor::writeComponents(const std::string & outFileName){
         return false;
     }
 
-    //Initialise output image buffer filled with 0s
+    //Initialise output image inputBuffer filled with 0s
     vector<unsigned char> outputBuffer(width * height, 0);
 
 
@@ -251,7 +322,7 @@ int PGMimageProcessor::getSmallestSize(void) const{
  * @param component: the component that will be printed
  */
 void PGMimageProcessor::printComponentData(const ConnectedComponent & component) const{
-    cout << component.getID() << ", " << component.getNumPixels();
+    cout << component.getID() << ", " << component.getNumPixels() << endl;
 } 
 
 

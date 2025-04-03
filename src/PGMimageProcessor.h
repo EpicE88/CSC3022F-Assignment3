@@ -23,11 +23,10 @@
 class PGMimageProcessor{
 private:
 
-    unsigned char * buffer;
+    std::vector<unsigned char> inputBuffer;
     int width, height;
-    int maxPixelValue;
     std::vector<std::unique_ptr<ConnectedComponent>> components;
-    int nextComponentID = 0;
+    int nextComponentID;
 
 
 public: 
@@ -81,7 +80,7 @@ public:
 
 
     /**
-     * Method that sets image data from existing sized buffer
+     * Method that sets image data from existing sized inputBuffer
      * @param data: image data
      * @param wd: width
      * @param ht: height

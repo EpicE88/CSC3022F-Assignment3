@@ -36,6 +36,8 @@ ConnectedComponent & ConnectedComponent::operator=(const ConnectedComponent & ot
     numPixels = other.numPixels;
     id = other.id;
     pixels = other.pixels;
+
+    return *this;
 }
 
 /**
@@ -51,6 +53,8 @@ ConnectedComponent & ConnectedComponent::operator=(ConnectedComponent && rhs){
     numPixels = rhs.numPixels;
     id = rhs.id;
     pixels = std::move(rhs.pixels);
+
+    return *this;
 }
 
 
