@@ -33,9 +33,13 @@ ConnectedComponent::ConnectedComponent(const ConnectedComponent & other): numPix
  * Copy Assignment Operator
  */
 ConnectedComponent & ConnectedComponent::operator=(const ConnectedComponent & other){
-    numPixels = other.numPixels;
-    id = other.id;
-    pixels = other.pixels;
+
+    // Check for self assignment
+    if (this != & other){
+        numPixels = other.numPixels;
+        id = other.id;
+        pixels = other.pixels;
+    }
 
     return *this;
 }
@@ -50,9 +54,12 @@ ConnectedComponent::ConnectedComponent(ConnectedComponent && rhs): numPixels(rhs
  * Move Assignment Operator
  */
 ConnectedComponent & ConnectedComponent::operator=(ConnectedComponent && rhs){
-    numPixels = rhs.numPixels;
-    id = rhs.id;
-    pixels = std::move(rhs.pixels);
+
+    if (this != &rhs){
+        numPixels = rhs.numPixels;
+        id = rhs.id;
+        pixels = std::move(rhs.pixels);
+    }
 
     return *this;
 }
