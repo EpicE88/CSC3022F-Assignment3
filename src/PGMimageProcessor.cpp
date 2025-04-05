@@ -305,6 +305,8 @@ int PGMimageProcessor::getComponentCount(void) const{
  * Method that returns the number of pixels in largest component
  */
 int PGMimageProcessor::getLargestSize(void) const{
+    if(components.empty())
+        return 0;
 
     int maxPixelNum = -999;
 
@@ -321,11 +323,13 @@ int PGMimageProcessor::getLargestSize(void) const{
  * Method that returns the number of pixels in smallest component
  */
 int PGMimageProcessor::getSmallestSize(void) const{
+    if (components.empty())
+        return 0;
 
     int minPixelNum = 999;
 
     for (const unique_ptr<ConnectedComponent> & component: components){
-        if (component->getNumPixels() >= minPixelNum){
+        if (component->getNumPixels() <= minPixelNum){
             minPixelNum = component->getNumPixels();
         }
     }

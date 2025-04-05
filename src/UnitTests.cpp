@@ -288,7 +288,7 @@ TEST_CASE("PGMimageProcessor - filterComponentBySize method"){
     }
 }
 
-/**
+
 TEST_CASE("PGMimageProcessor - writeComponents method"){
     PGMimageProcessor p;
     unsigned char data[] = {
@@ -320,6 +320,7 @@ TEST_CASE("PGMimageProcessor - writeComponents method"){
     }
 }
 
+
 TEST_CASE("PGMimageProcessor - bfs method"){
     PGMimageProcessor p;
     unsigned char data[] = {
@@ -343,16 +344,12 @@ TEST_CASE("PGMimageProcessor - bfs method"){
     
 }
 
+
+
 TEST_CASE("PGMimageProcessor - Get methods"){
-    PGMimageProcessor p;
-    unsigned char data[] = {
-        255, 0, 
-        0, 255
-    };
-    p.setImageData(data, 2, 2);
-    p.extractComponents(128, 1);
 
     SECTION("separated pixels"){
+        PGMimageProcessor p;
         unsigned char data[] = {
             255, 0, 
             0, 255
@@ -368,6 +365,7 @@ TEST_CASE("PGMimageProcessor - Get methods"){
     }
 
     SECTION("one large component"){
+        PGMimageProcessor p;
         unsigned char data[] = {
             255, 255, 
             255, 255
@@ -382,11 +380,12 @@ TEST_CASE("PGMimageProcessor - Get methods"){
     }
 
     SECTION("two components of different sizes"){
+        PGMimageProcessor p;
         unsigned char data[] = {
             255, 0, 255,
             255, 255, 0
         };
-        p.setImageData(data, 3, 3);
+        p.setImageData(data, 3, 2);
         p.extractComponents(128, 1);
 
         REQUIRE(p.getComponentCount() == 2);
@@ -397,6 +396,7 @@ TEST_CASE("PGMimageProcessor - Get methods"){
 
 }
 
+/*
 TEST_CASE("ConnectedComponent - Default Constructor"){
     ConnectedComponent c;
 
