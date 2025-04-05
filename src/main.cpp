@@ -49,9 +49,20 @@ int main(char argc, char * argv[]){
             std::cerr << "Format: ./bin/findcomp -m <min_valid_comp_size> -f <min_comp_size> <max_comp_size> -t <threshold> -p -w <out_file_name> <in_file_name>" << std::endl;
             return 1;
         }
-
-        
         
     }
 
+
+    PGMimageProcessor imageProcessor;
+
+    imageProcessor.read(inFileName);
+    imageProcessor.extractComponents(threshold, minComponentSize);
+    imageProcessor.filterComponentsBySize(minSize, maxSize);
+    imageProcessor.writeComponents(outFileName);
+    
+    if (print){
+        imageProcessor.printComponentData();
+    }
+
+    
 }
