@@ -10,6 +10,7 @@
  */
 #include "ConnectedComponent.h"
 
+
 //Big 6
 
 /**
@@ -48,7 +49,7 @@ ConnectedComponent & ConnectedComponent::operator=(const ConnectedComponent & ot
  * Move Constructor
  */
 ConnectedComponent::ConnectedComponent(ConnectedComponent && rhs): numPixels(rhs.numPixels),
-    id(rhs.id), pixels(std::move(rhs.pixels)){}
+    id(rhs.id), pixels(std::move(rhs.pixels)){rhs.updateNumPixels();}
 
 /**
  * Move Assignment Operator
@@ -60,6 +61,9 @@ ConnectedComponent & ConnectedComponent::operator=(ConnectedComponent && rhs){
         numPixels = rhs.numPixels;
         id = rhs.id;
         pixels = std::move(rhs.pixels);
+        
+        rhs.numPixels = 0;
+        rhs.id = 0;
     }
 
     return *this;
@@ -89,8 +93,8 @@ std::vector<std::pair<int,int>> ConnectedComponent::getPixels() const{
 /**
  * Set method. Sets the ID
  */
-void ConnectedComponent::setID(int id){
-    id = id;
+void ConnectedComponent::setID(int ID){
+    id = ID;
 }
 
 /**
@@ -100,4 +104,12 @@ void ConnectedComponent::setID(int id){
  */
 void ConnectedComponent::addPixel(int x, int y){
     pixels.push_back(std::make_pair(x, y));
+    updateNumPixels();
+}
+
+/**
+ * Method that updates numPixels when a pixel is added or removed
+ */
+void ConnectedComponent::updateNumPixels(){
+    numPixels = pixels.size();
 }

@@ -82,6 +82,10 @@ public:
      */
     void addPixel(int x, int y);
 
+    /**
+     * Method that updates numPixels when a pixel is added
+     */
+    void updateNumPixels();
 
 };
 

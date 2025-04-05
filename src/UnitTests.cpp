@@ -384,7 +384,6 @@ TEST_CASE("PGMimageProcessor - Get methods"){
     }
 
 }
-
 TEST_CASE("ConnectedComponent - Default Constructor"){
     ConnectedComponent c;
 
@@ -415,8 +414,8 @@ TEST_CASE("Connected Component - Move Constructor"){
     ConnectedComponent moved(std::move(original));
 
     REQUIRE(moved.getID() == 3);
-    REQUIRE(moved.getNumPixels() == 2);
-    REQUIRE(moved.getPixels().size() == 2);
+    REQUIRE(moved.getNumPixels() == 1);
+    REQUIRE(moved.getPixels().size() == 1);
     REQUIRE(moved.getPixels().data() == pixelsPtr);
 
     //Check if original is empty
@@ -442,15 +441,13 @@ TEST_CASE("ConnectedComponent - Move Assignment Operator"){
     original.setID(3);
     original.addPixel(2, 2);
 
-    const std::pair<int, int> * pixelsPtr = original.getPixels().data();
-
     ConnectedComponent moved;
-    moved = original;
+    moved = std::move(original);
 
     REQUIRE(moved.getID() == 3);
-    REQUIRE(moved.getNumPixels() == 2);
-    REQUIRE(moved.getPixels().size() == 2);
-    REQUIRE(moved.getPixels().data() == pixelsPtr);
+    REQUIRE(moved.getNumPixels() == 1);
+    REQUIRE(moved.getPixels().size() == 1);
+    REQUIRE(moved.getPixels()[0] == std::make_pair(2, 2));
 
     //Check if original is empty
     REQUIRE(original.getPixels().empty());
