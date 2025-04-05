@@ -235,14 +235,51 @@ TEST_CASE("extractComponents method"){
         REQUIRE(p.getComponentCount() < 13);
     }
 
+    SECTION("Threshold 500, min size 1"){
+        int componentCount = p.extractComponents(500, 2);
+        REQUIRE(componentCount == 0);
+        REQUIRE(p.getComponentCount() == 0);
+    }
+
     SECTION("Threshold 128, min size 2"){
         int componentCount = p.extractComponents(128, 2);
         REQUIRE(componentCount == 0);
         REQUIRE(p.getComponentCount() == 0);
     }
 
-
 }
+
+TEST_CASE("filterComponentBySize method"){
+    PGMimageProcessor p;
+    unsigned char data[] = {
+        255, 255, 0, 0, 0,
+        255, 255, 0, 0, 0,
+        0, 0, 255, 0, 0,
+        0, 0, 0, 255, 255,
+        0, 0, 0, 255, 255
+    };
+    p.setImageData(data, 5, 5);
+    p.extractComponents(128, 1);
+
+    SECTION("Filter components between 1 and 5"){
+        int componentCount = p.filterComponentsBySize(1, 5);
+        REQUIRE(componentCount == 2); 
+    }
+
+    SECTION("Filter components between 5 and 5"){
+        int componentCount = p.filterComponentsBySize(5, 5);
+        REQUIRE(componentCount == 1); 
+    }
+
+    SECTION("Filter components between 1 and 4"){
+        int componentCount = p.filterComponentsBySize(1, 4);
+        REQUIRE(componentCount == 1); 
+    }
+}
+
+
+
+
 
 
 
