@@ -85,6 +85,10 @@ PGMimageProcessor & PGMimageProcessor::operator=(PGMimageProcessor && rhs){
         height = rhs.height;
         components = std::move(rhs.components);
         nextComponentID = rhs.nextComponentID;
+
+        rhs.width = 0;
+        rhs.height = 0;
+        rhs.nextComponentID = 0;
     }
 
     return *this;
