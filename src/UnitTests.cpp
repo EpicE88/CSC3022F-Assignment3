@@ -405,6 +405,27 @@ TEST_CASE("Connected Component - Copy Constructor"){
     REQUIRE(copy.getPixels() == original.getPixels());
 }
 
+TEST_CASE("Connected Component - Move Constructor"){
+    ConnectedComponent original;
+    original.setID(3);
+    original.addPixel(2, 2);
+
+    const std::pair<int, int> * pixelsPtr = original.getPixels().data();
+
+    ConnectedComponent moved(std::move(original));
+
+    REQUIRE(moved.getID() == 3);
+    REQUIRE(moved.getNumPixels() == 2);
+    REQUIRE(moved.getPixels().size() == 2);
+    REQUIRE(moved.getPixels().data() == pixelsPtr);
+
+    //Check if original is empty
+    REQUIRE(original.getPixels().empty());
+    REQUIRE(original.getNumPixels() == 0);
+}
+
+
+
 
 
 
