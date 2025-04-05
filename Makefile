@@ -14,7 +14,7 @@ OBJ_DIR = obj
 BIN_DIR = bin
 
 # Source files
-SRCS = $(filter-out $(SRC_DIR)/unittest.cpp, $(wildcard $(SRC_DIR)/*.cpp))
+SRCS = $(filter-out $(SRC_DIR)/UnitTests.cpp, $(wildcard $(SRC_DIR)/*.cpp))
 
 # Test source file
 TEST_SRC = $(SRC_DIR)/UnitTests.cpp
