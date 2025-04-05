@@ -169,5 +169,48 @@ TEST_CASE("Copy Assignment Operator"){
     REQUIRE(copy.getComponentCount() == numComponents);
 }
 
+TEST_CASE("Move Assignment Operator"){
+    PGMimageProcessor original;
+    
+    unsigned char data[] = {
+        255, 255, 0,
+        255, 255, 0, 
+        0, 0, 255
+    };
+    original.setImageData(data, 3, 3);
+
+    //Populate components vector and increment nextComponentID
+    int numComponents = original.extractComponents(128, 1);
+    REQUIRE(numComponents > 0);
+
+    PGMimageProcessor moved(std::move(original));
+
+    SECTION("Check if contents moved"){
+        REQUIRE(original.getInputBuffer() == moved.getInputBuffer());
+        REQUIRE(original.getWidth() == moved.getWidth());
+        REQUIRE(original.getHeight() == moved.getHeight());
+        REQUIRE(original.getComponentCount() == moved.getComponentCount());
+        REQUIRE(original.getNextComponentID() == moved.getNextComponentID());
+
+        const std::vector<std::unique_ptr<ConnectedComponent>> & originalComponents = original.getComponents();
+        const std::vector<std::unique_ptr<ConnectedComponent>> & movedComponents = moved.getComponents();
+
+        //check each component
+        for (int i = 0; i < originalComponents.size(); ++i){
+            REQUIRE(originalComponents[i]->getID() == movedComponents[i]->getID());
+            REQUIRE(originalComponents[i]->getNumPixels() == movedComponents[i]->getNumPixels());
+        }
+
+    }
+
+    SECTION("Check if original is empty"){
+        REQUIRE(original.getInputBuffer().empty());
+        REQUIRE(original.getWidth() == 0);
+        REQUIRE(original.getHeight() == 0);
+        REQUIRE(original.getComponents().empty());
+        REQUIRE(original.getNextComponentID() == 0);
+    }
+}
+
 
 
