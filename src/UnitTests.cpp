@@ -12,7 +12,7 @@
 #include "PGMimageProcessor.h"
 
 
-TEST_CASE("Default Constructor"){
+TEST_CASE("PGMimageProcessor - Default Constructor"){
     PGMimageProcessor p;
     std::vector<unsigned char> inputBuffer = p.getInputBuffer();
     int width = p.getWidth();
@@ -30,7 +30,7 @@ TEST_CASE("Default Constructor"){
 
 
 
-TEST_CASE("Copy Constructor"){
+TEST_CASE("PGMimageProcessor - Copy Constructor"){
     PGMimageProcessor original;
     
     unsigned char data[] = {
@@ -78,7 +78,7 @@ TEST_CASE("Copy Constructor"){
 
 }
 
-TEST_CASE("Move Constructor"){
+TEST_CASE("PGMimageProcessor - Move Constructor"){
     PGMimageProcessor original;
     
     unsigned char data[] = {
@@ -122,7 +122,7 @@ TEST_CASE("Move Constructor"){
 
 }
 
-TEST_CASE("Copy Assignment Operator"){
+TEST_CASE("PGMimageProcessor - Copy Assignment Operator"){
     PGMimageProcessor original;
     
     unsigned char data[] = {
@@ -169,7 +169,7 @@ TEST_CASE("Copy Assignment Operator"){
     REQUIRE(copy.getComponentCount() == numComponents);
 }
 
-TEST_CASE("Move Assignment Operator"){
+TEST_CASE("PGMimageProcessor - Move Assignment Operator"){
     PGMimageProcessor original;
     
     unsigned char data[] = {
@@ -212,7 +212,7 @@ TEST_CASE("Move Assignment Operator"){
     }
 }
 
-TEST_CASE("extractComponents method"){
+TEST_CASE("PGMimageProcessor - extractComponents method"){
     PGMimageProcessor p;
     unsigned char data[] = {
         128, 0, 128, 0, 255,
@@ -249,7 +249,7 @@ TEST_CASE("extractComponents method"){
 
 }
 
-TEST_CASE("filterComponentBySize method"){
+TEST_CASE("PGMimageProcessor - filterComponentBySize method"){
     PGMimageProcessor p;
     unsigned char data[] = {
         255, 255, 0, 0, 0,
@@ -277,7 +277,7 @@ TEST_CASE("filterComponentBySize method"){
     }
 }
 
-TEST_CASE("writeComponents method"){
+TEST_CASE("PGMimageProcessor - writeComponents method"){
     PGMimageProcessor p;
     unsigned char data[] = {
         255, 255, 0,
@@ -308,7 +308,7 @@ TEST_CASE("writeComponents method"){
     }
 }
 
-TEST_CASE("bfs method"){
+TEST_CASE("PGMimageProcessor - bfs method"){
     PGMimageProcessor p;
     unsigned char data[] = {
         255, 255, 0,
@@ -331,7 +331,7 @@ TEST_CASE("bfs method"){
     
 }
 
-TEST_CASE("Get methods"){
+TEST_CASE("PGMimageProcessor - Get methods"){
     PGMimageProcessor p;
     unsigned char data[] = {
         255, 0, 
@@ -340,15 +340,69 @@ TEST_CASE("Get methods"){
     p.setImageData(data, 2, 2);
     p.extractComponents(128, 1);
 
-    SECTION("Component Count"){
+    SECTION("separated pixels"){
+        unsigned char data[] = {
+            255, 0, 
+            0, 255
+        };
+        p.setImageData(data, 2, 2);
+        p.extractComponents(128, 1);
+
         REQUIRE(p.getComponentCount() == 2);
+
+        REQUIRE(p.getLargestSize() == 1);
+        REQUIRE(p.getSmallestSize() == 1);
+
     }
 
-    SECTION("Largest and smallest size"){
-        REQUIRE(p.getLargestSize() == 1);
+    SECTION("one large component"){
+        unsigned char data[] = {
+            255, 255, 
+            255, 255
+        };
+        p.setImageData(data, 2, 2);
+        p.extractComponents(128, 1);
+
+        REQUIRE(p.getComponentCount() == 1);
+
+        REQUIRE(p.getLargestSize() == 4);
+        REQUIRE(p.getSmallestSize() == 4);
+    }
+
+    SECTION("two components of different sizes"){
+        unsigned char data[] = {
+            255, 0, 255,
+            255, 255, 0
+        };
+        p.setImageData(data, 3, 3);
+        p.extractComponents(128, 1);
+
+        REQUIRE(p.getComponentCount() == 2);
+
+        REQUIRE(p.getLargestSize() == 3);
         REQUIRE(p.getSmallestSize() == 1);
     }
 
+}
+
+TEST_CASE("ConnectedComponent - Default Constructor"){
+    ConnectedComponent c;
+
+    REQUIRE(c.getNumPixels() == 0);
+    REQUIRE(c.getID() == 0);
+    REQUIRE(c.getPixels().empty());
+}
+
+TEST_CASE("Connected Component - Copy Constructor"){
+    ConnectedComponent original;
+    original.setID(1);
+    original.addPixel(10, 20);
+
+    ConnectedComponent copy(original);
+
+    REQUIRE(copy.getID() == original.getID());
+    REQUIRE(copy.getNumPixels() == original.getNumPixels());
+    REQUIRE(copy.getPixels() == original.getPixels());
 }
 
 
