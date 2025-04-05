@@ -217,7 +217,7 @@ TEST_CASE("PGMimageProcessor - Move Assignment Operator"){
     }
 }
 
-/*
+
 TEST_CASE("PGMimageProcessor - extractComponents method"){
     PGMimageProcessor p;
     unsigned char data[] = {
@@ -269,20 +269,26 @@ TEST_CASE("PGMimageProcessor - filterComponentBySize method"){
 
     SECTION("Filter components between 1 and 5"){
         int componentCount = p.filterComponentsBySize(1, 5);
-        REQUIRE(componentCount == 2); 
+        REQUIRE(componentCount == 3); 
     }
 
     SECTION("Filter components between 5 and 5"){
         int componentCount = p.filterComponentsBySize(5, 5);
+        REQUIRE(componentCount == 0); 
+    }
+
+    SECTION("Filter components between 1 and 3"){
+        int componentCount = p.filterComponentsBySize(1, 3);
         REQUIRE(componentCount == 1); 
     }
 
-    SECTION("Filter components between 1 and 4"){
-        int componentCount = p.filterComponentsBySize(1, 4);
-        REQUIRE(componentCount == 1); 
+    SECTION("Filter components between 4 and 4"){
+        int componentCount = p.filterComponentsBySize(4, 4);
+        REQUIRE(componentCount == 2); 
     }
 }
 
+/**
 TEST_CASE("PGMimageProcessor - writeComponents method"){
     PGMimageProcessor p;
     unsigned char data[] = {
