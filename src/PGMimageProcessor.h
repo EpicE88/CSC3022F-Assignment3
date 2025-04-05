@@ -135,6 +135,11 @@ public:
      */
 
     void printComponentData(const ConnectedComponent & component) const; 
+    
+    /**
+     * Method that prints component data for all components in a format
+     */
+    void printComponentData() const;
 
     /**
      * Method that uses Breadth-First Search to find all connected foreground pixels of a component
@@ -142,8 +147,7 @@ public:
      * @param y: y-coordinate of pixel 
      * @param component: the connected component
      */
-
-     void bfs(int x, int y, ConnectedComponent & component);
+    void bfs(int x, int y, ConnectedComponent & component);
 
 };
 

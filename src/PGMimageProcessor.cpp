@@ -324,8 +324,37 @@ int PGMimageProcessor::getSmallestSize(void) const{
  * @param component: the component that will be printed
  */
 void PGMimageProcessor::printComponentData(const ConnectedComponent & component) const{
-    cout << component.getID() << ", " << component.getNumPixels() << endl;
+    cout << "Component ID: " << component.getID() << ", Number of pixels: " << component.getNumPixels() << endl;
 } 
+
+/**
+ * Method that prints component data for all components in a format
+ */
+void PGMimageProcessor::printComponentData() const{
+
+    if (components.empty()){
+        cout << "There are no components to display" << endl;
+        return;
+    }
+
+    //Heading
+    cout << "Component Data:" << endl;
+    //Line
+    cout << "------------------------" << endl;
+
+    for (const std::unique_ptr<ConnectedComponent> & component: components){
+       printComponentData(*component); 
+    }
+
+    //Line
+    cout << "------------------------" << endl;
+
+    cout << "Total components: " << components.size() << endl;
+    cout << "Smallest component size: " << getSmallestSize() << endl;
+    cout << "Largest component size: " << getLargestSize() << endl; 
+
+
+}
 
 /**
  * Method that uses Breadth-First Search to find all connected foreground pixels of a component
