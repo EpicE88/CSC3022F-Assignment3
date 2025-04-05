@@ -66,7 +66,12 @@ PGMimageProcessor & PGMimageProcessor::operator=(const PGMimageProcessor & other
  * Move Constructor
  */
 PGMimageProcessor::PGMimageProcessor(PGMimageProcessor && rhs): inputBuffer(std::move(rhs.inputBuffer)), 
-    width(rhs.width), height(rhs.height), components(std::move(rhs.components)), nextComponentID(rhs.nextComponentID){}
+    width(rhs.width), height(rhs.height), components(std::move(rhs.components)), 
+    nextComponentID(rhs.nextComponentID){
+        rhs.width = 0;
+        rhs.height = 0;
+        rhs.nextComponentID = 0;
+    }
 
 /**
  * Move Assignment Operator
