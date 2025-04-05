@@ -328,13 +328,28 @@ TEST_CASE("bfs method"){
         p.bfs(2, 2, component);
         REQUIRE(component.getNumPixels() == 1);
     }
-
-    
-
-    
     
 }
 
+TEST_CASE("Get methods"){
+    PGMimageProcessor p;
+    unsigned char data[] = {
+        255, 0, 
+        0, 255
+    };
+    p.setImageData(data, 2, 2);
+    p.extractComponents(128, 1);
+
+    SECTION("Component Count"){
+        REQUIRE(p.getComponentCount() == 2);
+    }
+
+    SECTION("Largest and smallest size"){
+        REQUIRE(p.getLargestSize() == 1);
+        REQUIRE(p.getSmallestSize() == 1);
+    }
+
+}
 
 
 
