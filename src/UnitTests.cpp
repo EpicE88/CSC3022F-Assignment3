@@ -212,5 +212,39 @@ TEST_CASE("Move Assignment Operator"){
     }
 }
 
+TEST_CASE("extractComponents method"){
+    PGMimageProcessor p;
+    unsigned char data[] = {
+        128, 0, 128, 0, 255,
+        0, 255, 0, 128, 0,
+        255, 0, 255, 0, 255,
+        0, 128, 0, 255, 0,
+        128, 0, 255, 0, 128
+    };
+    p.setImageData(data, 5, 5);
+
+    SECTION("Threshold 128, min size 1"){
+        int componentCount = p.extractComponents(128, 1);
+        REQUIRE(componentCount == 13);
+        REQUIRE(p.getComponentCount() == 13);
+    }
+
+    SECTION("Threshold 255, min size 1"){
+        int componentCount = p.extractComponents(255, 1);
+        REQUIRE(componentCount < 13);
+        REQUIRE(p.getComponentCount() < 13);
+    }
+
+    SECTION("Threshold 128, min size 2"){
+        int componentCount = p.extractComponents(128, 2);
+        REQUIRE(componentCount == 0);
+        REQUIRE(p.getComponentCount() == 0);
+    }
+
+
+}
+
+
+
 
 
