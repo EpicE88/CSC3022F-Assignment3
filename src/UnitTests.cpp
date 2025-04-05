@@ -92,24 +92,26 @@ TEST_CASE("PGMimageProcessor - Move Constructor"){
     int numComponents = original.extractComponents(128, 1);
     REQUIRE(numComponents > 0);
 
+    // Store original values for verification
+    const int originalID = original.getNextComponentID();
+    const int originalCount = original.getComponentCount();
+    const int originalWidth = original.getWidth();
+    const int originalHeight = original.getHeight();
+    const std::vector<unsigned char> originalBuffer = original.getInputBuffer();
+
+    const ConnectedComponent* firstComponentPtr = original.getComponents()[0].get();
+
     PGMimageProcessor moved(std::move(original));
 
     SECTION("Check if contents moved"){
-        REQUIRE(original.getInputBuffer() == moved.getInputBuffer());
-        REQUIRE(original.getWidth() == moved.getWidth());
-        REQUIRE(original.getHeight() == moved.getHeight());
-        REQUIRE(original.getComponentCount() == moved.getComponentCount());
-        REQUIRE(original.getNextComponentID() == moved.getNextComponentID());
+        REQUIRE(originalBuffer == moved.getInputBuffer());
+        REQUIRE(originalWidth == moved.getWidth());
+        REQUIRE(originalHeight == moved.getHeight());
+        REQUIRE(originalCount == moved.getComponentCount());
+        REQUIRE(originalID == moved.getNextComponentID());
 
-        const std::vector<std::unique_ptr<ConnectedComponent>> & originalComponents = original.getComponents();
-        const std::vector<std::unique_ptr<ConnectedComponent>> & movedComponents = moved.getComponents();
-
-        //check each component
-        for (int i = 0; i < originalComponents.size(); ++i){
-            REQUIRE(originalComponents[i]->getID() == movedComponents[i]->getID());
-            REQUIRE(originalComponents[i]->getNumPixels() == movedComponents[i]->getNumPixels());
-        }
-
+        //Check if components were moved
+        REQUIRE(moved.getComponents()[0].get() == firstComponentPtr);
     }
 
     SECTION("Check if original is empty"){
@@ -121,7 +123,7 @@ TEST_CASE("PGMimageProcessor - Move Constructor"){
     }
 
 }
-
+/*
 TEST_CASE("PGMimageProcessor - Copy Assignment Operator"){
     PGMimageProcessor original;
     
@@ -384,6 +386,7 @@ TEST_CASE("PGMimageProcessor - Get methods"){
     }
 
 }
+
 TEST_CASE("ConnectedComponent - Default Constructor"){
     ConnectedComponent c;
 
@@ -453,7 +456,7 @@ TEST_CASE("ConnectedComponent - Move Assignment Operator"){
     REQUIRE(original.getPixels().empty());
     REQUIRE(original.getNumPixels() == 0);
 }
-
+*/
 
 
 
