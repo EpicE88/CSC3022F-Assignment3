@@ -149,6 +149,32 @@ public:
      */
     void bfs(int x, int y, ConnectedComponent & component);
 
+    /**
+     * Get Method. Returns the inputBuffer
+     */
+    const std::vector<unsigned char> & getInputBuffer() const;
+
+    /**
+     * Get Method. Returns width
+     */
+    int getWidth() const;
+
+    /**
+     * Get Method. Returns height
+     */
+    int getHeight() const;
+
+    /**
+     * Get Method. Returns a const referencvcve to components vector
+     */
+    const std::vector<std::unique_ptr<ConnectedComponent>>& getComponents() const;
+    
+    /**
+     * Get Method. returns nextComponentID
+     */
+    int getNextComponentID() const;
+
+
 };
 
 #endif

@@ -406,6 +406,41 @@ void PGMimageProcessor::bfs(int x, int y, ConnectedComponent & component){
 
 }
 
+/**
+ * Get Method. Returns the inputBuffer
+ */
+const std::vector<unsigned char> & PGMimageProcessor::getInputBuffer() const{
+    return inputBuffer;
+}
+
+/**
+ * Get Method. Returns width
+ */
+int PGMimageProcessor::getWidth() const{
+    return width;
+}
+
+/**
+ * Get Method. Returns height
+ */
+int PGMimageProcessor::getHeight() const{
+    return height;
+}
+
+/**
+ * Get Method. Returns a const referencvcve to components vector
+ */
+const std::vector<std::unique_ptr<ConnectedComponent>>& PGMimageProcessor::getComponents() const {
+    return components;
+}
+
+/**
+ * Get Method. returns nextComponentID
+ */
+int PGMimageProcessor::getNextComponentID() const{
+    return nextComponentID;
+}
+
 
 
 
