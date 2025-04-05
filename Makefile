@@ -1,6 +1,6 @@
 # Makefile based on a generic template for compiling C++ programs.
 # Author: Ethan Ngwetjana
-# Date: 31/03/2025
+# Date: 05/04/2025
 
 # Compiler
 CXX = g++
@@ -20,7 +20,7 @@ SRCS = $(wildcard $(SRC_DIR)/*.cpp)
 OBJS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRCS))
 
 # Executable name
-TARGET = $(BIN_DIR)/myexec
+TARGET = $(BIN_DIR)/findcomp
 
 # Default target
 all: $(TARGET)
