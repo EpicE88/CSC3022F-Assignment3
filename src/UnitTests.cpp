@@ -277,6 +277,64 @@ TEST_CASE("filterComponentBySize method"){
     }
 }
 
+TEST_CASE("writeComponents method"){
+    PGMimageProcessor p;
+    unsigned char data[] = {
+        255, 255, 0,
+        255, 255, 0,
+        0, 0, 255
+    };
+    p.setImageData(data, 3, 3);
+    p.extractComponents(128, 1);
+    
+    const std::string testFile = "test_output.pgm";
+
+    SECTION("Write components to output file"){
+        bool wrote = p.writeComponents(testFile);
+        REQUIRE(wrote);
+
+        //chekc if file exists
+        std::ifstream ifs(testFile);
+        REQUIRE(ifs.good());
+        ifs.close();
+        
+        std::remove(testFile.c_str());
+    }
+
+    SECTION("Write with no components"){
+        PGMimageProcessor emptyP;
+        bool wrote = emptyP.writeComponents(testFile);
+        REQUIRE_FALSE(wrote);
+    }
+}
+
+TEST_CASE("bfs method"){
+    PGMimageProcessor p;
+    unsigned char data[] = {
+        255, 255, 0,
+        255, 255, 0,
+        0, 0, 255
+    };
+    p.setImageData(data, 3, 3);
+
+    ConnectedComponent component;
+
+    SECTION("4x4 block in top-left"){
+        p.bfs(0, 0, component);
+        REQUIRE(component.getNumPixels() == 4);
+    }
+
+    SECTION("Single pixel at the bottom"){
+        p.bfs(2, 2, component);
+        REQUIRE(component.getNumPixels() == 1);
+    }
+
+    
+
+    
+    
+}
+
 
 
 
