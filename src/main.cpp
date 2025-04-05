@@ -8,56 +8,66 @@
 #include <iostream>
 #include "ConnectedComponent.h"
 #include "PGMimageProcessor.h"
+#include <climits>
 
 int main(char argc, char * argv[]){
 
-    //Default command-line arguments
-    int minComponentSize = 1;
-    int minSize = 0;
-    int maxSize = 0;
-    int threshold = 128;
-    bool print = false;
-    std::string inFileName;
-    std::string outFileName;
+// Default command-line arguments
+int minComponentSize = 1;  
+int minSize = 1;  
+int maxSize = INT_MAX;  
+int threshold = 128;   
+bool print = false;
+bool filterFlag = false;        
+std::string inFileName;
+std::string outFileName;
 
-    //Handle command-line arguments
-    for (int i = 0; i < argc; ++i){
-        std::string arg = argv[i];
+// Handle command-line arguments
+for (int i = 1; i < argc; ++i) {
+    std::string arg = argv[i];
 
-        if (arg == "-m" && i + 1 < argc)
-            minComponentSize = std::stoi(argv[++i]);
-
-        if (arg == "-f" && i + 2 < argc){
-            minSize == std::stoi(argv[++i]);
-            maxSize == std::stoi(argv[++i]);
-        }
-        if (arg == "-t" && i + 1 < argc)
-            threshold = std::stoi(argv[++i]);
-
-        if (arg == "-p")
-            print = true;
-
-        if (arg == "-w" && i + 1 < argc)
-            outFileName = argv[++i];
-        
-        else
-            inFileName = argv[i];
-
-        //Handle incorrect input
-        if (minSize == 0 || maxSize == 0 || inFileName.empty() || outFileName.empty()){
-            std::cerr << "Incorrect input." << std::endl;
-            std::cerr << "Format: ./bin/findcomp -m <min_valid_comp_size> -f <min_comp_size> <max_comp_size> -t <threshold> -p -w <out_file_name> <in_file_name>" << std::endl;
-            return 1;
-        }
-        
+    if (arg == "-m" && i + 1 < argc) {
+        minComponentSize = std::stoi(argv[++i]);
     }
+    else if (arg == "-f" && i + 2 < argc) {
+        minSize = std::stoi(argv[++i]);
+        maxSize = std::stoi(argv[++i]);
+        filterFlag = true;
+    }
+    else if (arg == "-t" && i + 1 < argc) {
+        threshold = std::stoi(argv[++i]);
+    }
+    else if (arg == "-p") {
+        print = true;
+    }
+    else if (arg == "-w" && i + 1 < argc) {
+        outFileName = argv[++i];
+    }
+    else {
+        if (arg[0] != '-') {
+            inFileName = arg;
+        }
+    }
+}
 
+// Validate required arguments
+if (inFileName.empty()) {
+    std::cerr << "Error: No input file specified." << std::endl;
+    return 1;
+}
+
+if (!outFileName.empty() && outFileName[0] == '-') {
+    std::cerr << "Error: Invalid output filename." << std::endl;
+    return 1;
+}
 
     PGMimageProcessor imageProcessor;
 
     imageProcessor.read(inFileName);
     imageProcessor.extractComponents(threshold, minComponentSize);
-    imageProcessor.filterComponentsBySize(minSize, maxSize);
+    if (filterFlag)
+        imageProcessor.filterComponentsBySize(minSize, maxSize);
+
     imageProcessor.writeComponents(outFileName);
     
     if (print){

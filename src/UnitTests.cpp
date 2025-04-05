@@ -396,7 +396,6 @@ TEST_CASE("PGMimageProcessor - Get methods"){
 
 }
 
-/*
 TEST_CASE("ConnectedComponent - Default Constructor"){
     ConnectedComponent c;
 
@@ -466,7 +465,7 @@ TEST_CASE("ConnectedComponent - Move Assignment Operator"){
     REQUIRE(original.getPixels().empty());
     REQUIRE(original.getNumPixels() == 0);
 }
-*/
+
 
 
 
