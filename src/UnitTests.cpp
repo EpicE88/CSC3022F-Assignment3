@@ -122,5 +122,52 @@ TEST_CASE("Move Constructor"){
 
 }
 
+TEST_CASE("Copy Assignment Operator"){
+    PGMimageProcessor original;
+    
+    unsigned char data[] = {
+        255, 255, 0,
+        255, 255, 0, 
+        0, 0, 255
+    };
+    original.setImageData(data, 3, 3);
+
+    //Populate components vector and increment nextComponentID
+    int numComponents = original.extractComponents(128, 1);
+    REQUIRE(numComponents > 0);
+
+    //Ensure original has components before copying
+    REQUIRE(original.getComponentCount() > 0);
+    REQUIRE(original.getNextComponentID() > 0);
+
+    PGMimageProcessor copy;
+    copy = original;
+
+    REQUIRE(original.getInputBuffer() == copy.getInputBuffer());
+    REQUIRE(original.getWidth() == copy.getWidth());
+    REQUIRE(original.getHeight() == copy.getHeight());
+    REQUIRE(original.getComponentCount() == copy.getComponentCount());
+    REQUIRE(original.getNextComponentID() == copy.getNextComponentID());
+
+    //Ensure components were deeply copied
+    const std::vector<std::unique_ptr<ConnectedComponent>> & originalComponents = original.getComponents();
+    const std::vector<std::unique_ptr<ConnectedComponent>> & copiedComponents = copy.getComponents();
+
+    //check each component
+    for (int i = 0; i < originalComponents.size(); ++i){
+        REQUIRE(originalComponents[i]->getID() == copiedComponents[i]->getID());
+        REQUIRE(originalComponents[i]->getNumPixels() == copiedComponents[i]->getNumPixels());
+    }
+
+    //check independency
+
+    //remove all components in orginal
+    original.filterComponentsBySize(100, 100);
+    REQUIRE(original.getComponentCount() == 0);
+
+    //check if copy is unchanged
+    REQUIRE(copy.getComponentCount() == numComponents);
+}
+
 
 
