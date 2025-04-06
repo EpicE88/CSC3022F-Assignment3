@@ -20,10 +20,11 @@
 #ifndef _PGMIP_H
 #define _PGMIP_H
 
+template <typename T>
 class PGMimageProcessor{
 private:
 
-    std::vector<unsigned char> inputBuffer;
+    std::vector<T> inputBuffer;
     int width, height;
     std::vector<std::unique_ptr<ConnectedComponent>> components;
     int nextComponentID;
@@ -85,7 +86,7 @@ public:
      * @param wd: width
      * @param ht: height
      */
-    void setImageData(unsigned char* data, int wd, int ht);
+    void setImageData(T* data, int wd, int ht);
 
     // Core methods
 
@@ -152,7 +153,7 @@ public:
     /**
      * Get Method. Returns the inputBuffer
      */
-    const std::vector<unsigned char> & getInputBuffer() const;
+    const std::vector<T> & getInputBuffer() const;
 
     /**
      * Get Method. Returns width
