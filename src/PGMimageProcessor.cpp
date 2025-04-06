@@ -279,7 +279,7 @@ bool PGMimageProcessor::writeComponents(const std::string & outFileName){
         return false;
     }
 
-    ofs << "P5" << width << " " << height << endl << 255 << endl;
+    ofs << "P5\n" << width << " " << height << endl << 255 << endl;
     ofs.write(reinterpret_cast<const char*>(outputBuffer.data()), width * height);
 
     if (!ofs){

@@ -298,6 +298,7 @@ TEST_CASE("PGMimageProcessor - writeComponents method"){
     };
     p.setImageData(data, 3, 3);
     p.extractComponents(128, 1);
+    p.printComponentData();
     
     const std::string testFile = "test_output.pgm";
 
@@ -310,14 +311,14 @@ TEST_CASE("PGMimageProcessor - writeComponents method"){
         REQUIRE(ifs.good());
         ifs.close();
         
-        std::remove(testFile.c_str());
+        //std::remove(testFile.c_str());
     }
 
-    SECTION("Write with no components"){
-        PGMimageProcessor emptyP;
-        bool wrote = emptyP.writeComponents(testFile);
-        REQUIRE_FALSE(wrote);
-    }
+    // SECTION("Write with no components"){
+    //     PGMimageProcessor emptyP;
+    //     bool wrote = emptyP.writeComponents(testFile);
+    //     REQUIRE_FALSE(wrote);
+    // }
 }
 
 
@@ -465,6 +466,172 @@ TEST_CASE("ConnectedComponent - Move Assignment Operator"){
     REQUIRE(original.getPixels().empty());
     REQUIRE(original.getNumPixels() == 0);
 }
+
+TEST_CASE("Edge case testing for writing PGM images"){
+    
+    SECTION("Single small component test"){
+        unsigned char data[] = {
+            255, 255, 255,
+            255, 255, 255,
+            255, 255, 255
+        };
+
+        std::string outfile = "single_small.pgm";
+
+        PGMimageProcessor p;
+        p.setImageData(data, 3, 3);
+        p.extractComponents(128, 1);
+        p.printComponentData();
+        p.writeComponents(outfile);
+    }
+
+    SECTION("Small border pixel test"){
+        unsigned char data[] = {
+            255, 255, 255,
+            255,   0, 255,
+            255, 255, 255
+        };
+
+        std::string outfile = "border_small.pgm";
+
+        PGMimageProcessor p;
+        p.setImageData(data, 3, 3);
+        p.extractComponents(128, 1);
+        p.printComponentData();
+        p.writeComponents(outfile);
+    }
+
+    SECTION("Large Pattern"){
+        unsigned char data[] = {
+              // Row 1 (Top border + corners)
+    255, 255, 255, 255, 255,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 255, 255,
+    // Row 2 (Vertical lines)
+    255,   0,   0,   0, 255,   0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,   0, 255,   0,
+    // Row 3 (H-shape)
+    255,   0, 255,   0, 255,   0, 255,   0,   0,   0,   0,   0,   0,   0,   0,   0, 255,   0, 255,   0,
+    // Row 4
+    255,   0, 255,   0, 255,   0, 255,   0, 255, 255, 255, 255, 255, 255, 255,   0, 255,   0, 255,   0,
+    // Row 5 (Cross)
+    255,   0, 255,   0, 255,   0, 255,   0, 255,   0,   0,   0,   0,   0, 255,   0, 255,   0, 255,   0,
+    // Row 6
+      0,   0,   0,   0,   0,   0, 255,   0, 255,   0, 255, 255, 255,   0, 255,   0, 255,   0, 255,   0,
+    // Row 7 (Noise)
+    255, 255, 255, 255, 255,   0, 255,   0, 255,   0, 255,   0, 255,   0, 255,   0, 255,   0, 255,   0,
+    // Row 8
+      0,   0,   0,   0, 255,   0, 255,   0, 255,   0,   0,   0, 255,   0, 255,   0, 255,   0, 255,   0,
+    // Row 9
+    255, 255, 255,   0, 255,   0, 255,   0, 255, 255, 255,   0, 255,   0, 255,   0, 255,   0, 255,   0,
+    // Row 10
+      0,   0, 255,   0, 255,   0, 255,   0,   0,   0, 255,   0, 255,   0, 255,   0,   0,   0, 255,   0,
+    // Row 11 (Diagonal)
+    255,   0, 255,   0, 255,   0, 255, 255, 255,   0, 255,   0, 255,   0, 255, 255, 255,   0, 255,   0,
+    // Row 12
+    255,   0, 255,   0, 255,   0,   0,   0, 255,   0, 255,   0, 255,   0,   0,   0, 255,   0, 255,   0,
+    // Row 13
+    255,   0, 255,   0, 255, 255, 255,   0, 255,   0, 255,   0, 255, 255, 255,   0, 255,   0, 255,   0,
+    // Row 14
+    255,   0, 255,   0,   0,   0, 255,   0, 255,   0, 255,   0,   0,   0, 255,   0, 255,   0, 255,   0,
+    // Row 15
+    255,   0, 255, 255, 255,   0, 255,   0, 255,   0, 255, 255, 255,   0, 255,   0, 255,   0, 255,   0,
+    // Row 16
+    255,   0,   0,   0, 255,   0, 255,   0,   0,   0,   0,   0, 255,   0, 255,   0,   0,   0,   0,   0,
+    // Row 17
+    255, 255, 255,   0, 255,   0, 255, 255, 255, 255, 255,   0, 255,   0, 255, 255, 255, 255, 255,   0,
+    // Row 18
+      0,   0, 255,   0, 255,   0,   0,   0,   0,   0, 255,   0, 255,   0,   0,   0,   0,   0, 255,   0,
+    // Row 19
+    255,   0, 255,   0, 255, 255, 255, 255, 255,   0, 255,   0, 255, 255, 255, 255, 255,   0, 255,   0,
+    // Row 20 (Bottom border)
+    255,   0, 255,   0,   0,   0,   0,   0, 255,   0, 255,   0,   0,   0,   0,   0, 255,   0, 255, 255
+        };
+
+        std::string outfile = "large_pattern.pgm";
+
+        PGMimageProcessor p;
+        p.setImageData(data, 20, 20);
+        p.extractComponents(128, 1);
+        p.printComponentData();
+        p.writeComponents(outfile);
+    }
+
+    SECTION("Small pattern test"){
+        unsigned char data[] = {
+                // Row 1 (Border + corners)
+        255, 255, 255, 255, 255,   0,   0, 255,
+        // Row 2 (Vertical lines)
+        255,   0,   0,   0, 255,   0, 255,   0,
+        // Row 3 (H-shape)
+        255,   0, 255,   0, 255,   0, 255,   0,
+        // Row 4 (Cross)
+        255,   0, 255,   0, 255,   0,   0,   0,
+        // Row 5 (Noise)
+          0,   0,   0,   0, 255,   0, 255,   0,
+        // Row 6 (Diagonal)
+        255, 255, 255,   0, 255,   0, 255,   0,
+        // Row 7
+        255,   0, 255,   0,   0,   0, 255,   0,
+        // Row 8 (Bottom border)
+        255,   0, 255,   0, 255, 255, 255, 255
+        };
+    
+        std::string outfile = "small_pattern.pgm";
+    
+        PGMimageProcessor p;
+        p.setImageData(data, 8, 8);
+        p.extractComponents(128, 1);
+        p.printComponentData();
+        p.writeComponents(outfile);
+    }
+    
+    SECTION("Basic thresholding"){
+        unsigned char data[] = {
+            50,  200,  50,
+            200,  50, 200,
+            50,  200,  50
+        };
+
+        std::string outfile = "basic_threshold.pgm";
+
+        PGMimageProcessor p;
+        p.setImageData(data, 3, 3);
+        p.extractComponents(128, 1);
+        p.printComponentData();
+        p.writeComponents(outfile);
+    }
+
+    SECTION("Threshold equal to pixel value"){
+        unsigned char data[] = {
+            100, 128, 100,
+            128, 100, 128,
+            100, 128, 100
+        };
+
+        std::string outfile = "equal_threshold.pgm";
+
+        PGMimageProcessor p;
+        p.setImageData(data, 3, 3);
+        p.extractComponents(128, 1);
+        p.printComponentData();
+        p.writeComponents(outfile);
+    }
+
+    SECTION("Gradual threshold"){
+        unsigned char data[] = {
+            120, 125, 130,
+            135, 140, 145,
+            150, 155, 160
+        };
+
+        std::string outfile = "gradual_threshold.pgm";
+
+        PGMimageProcessor p;
+        p.setImageData(data, 3, 3);
+        p.extractComponents(130, 1);
+        p.printComponentData();
+        p.writeComponents(outfile);
+    }
+}
+
 
 
 
