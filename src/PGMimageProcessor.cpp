@@ -66,7 +66,12 @@ PGMimageProcessor & PGMimageProcessor::operator=(const PGMimageProcessor & other
  * Move Constructor
  */
 PGMimageProcessor::PGMimageProcessor(PGMimageProcessor && rhs): inputBuffer(std::move(rhs.inputBuffer)), 
-    width(rhs.width), height(rhs.height), components(std::move(rhs.components)), nextComponentID(rhs.nextComponentID){}
+    width(rhs.width), height(rhs.height), components(std::move(rhs.components)), 
+    nextComponentID(rhs.nextComponentID){
+        rhs.width = 0;
+        rhs.height = 0;
+        rhs.nextComponentID = 0;
+    }
 
 /**
  * Move Assignment Operator
@@ -80,6 +85,10 @@ PGMimageProcessor & PGMimageProcessor::operator=(PGMimageProcessor && rhs){
         height = rhs.height;
         components = std::move(rhs.components);
         nextComponentID = rhs.nextComponentID;
+
+        rhs.width = 0;
+        rhs.height = 0;
+        rhs.nextComponentID = 0;
     }
 
     return *this;
@@ -218,18 +227,23 @@ int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSi
  * @param maxSize: maximum size criteria
  */
 int PGMimageProcessor::filterComponentsBySize(int minSize, int maxSize){
-    
-    //Iterated with an iterator through all stored components
-    for(vector<std::unique_ptr<ConnectedComponent>>::const_iterator it = components.begin(); it != components.end(); ++it){
-        int pixels = (*it)->getNumPixels();
-        
-        //Remove any component that is not in the size criteria
-        if (pixels < minSize || pixels > maxSize){
-            components.erase(it);
-        }
 
+    //Bounds checking
+    if (minSize < 0 || maxSize < 0 || minSize > maxSize){
+        return components.size();
     }
 
+
+    //Iterated with an iterator through all stored components
+    std::vector<std::unique_ptr<ConnectedComponent>>::iterator it = components.begin();
+    while (it != components.end()) {
+        int pixels = (*it)->getNumPixels();
+        if (pixels < minSize || pixels > maxSize) {
+            it = components.erase(it); 
+        } else {
+            ++it;
+        }
+    }
     return components.size();
 }
 
@@ -265,7 +279,7 @@ bool PGMimageProcessor::writeComponents(const std::string & outFileName){
         return false;
     }
 
-    ofs << "P5" << width << " " << height << endl << 255 << endl;
+    ofs << "P5\n" << width << " " << height << endl << 255 << endl;
     ofs.write(reinterpret_cast<const char*>(outputBuffer.data()), width * height);
 
     if (!ofs){
@@ -291,6 +305,8 @@ int PGMimageProcessor::getComponentCount(void) const{
  * Method that returns the number of pixels in largest component
  */
 int PGMimageProcessor::getLargestSize(void) const{
+    if(components.empty())
+        return 0;
 
     int maxPixelNum = -999;
 
@@ -307,11 +323,13 @@ int PGMimageProcessor::getLargestSize(void) const{
  * Method that returns the number of pixels in smallest component
  */
 int PGMimageProcessor::getSmallestSize(void) const{
+    if (components.empty())
+        return 0;
 
     int minPixelNum = 999;
 
     for (const unique_ptr<ConnectedComponent> & component: components){
-        if (component->getNumPixels() >= minPixelNum){
+        if (component->getNumPixels() <= minPixelNum){
             minPixelNum = component->getNumPixels();
         }
     }

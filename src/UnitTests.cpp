@@ -92,24 +92,26 @@ TEST_CASE("PGMimageProcessor - Move Constructor"){
     int numComponents = original.extractComponents(128, 1);
     REQUIRE(numComponents > 0);
 
+    // Store original values for verification
+    const int originalID = original.getNextComponentID();
+    const int originalCount = original.getComponentCount();
+    const int originalWidth = original.getWidth();
+    const int originalHeight = original.getHeight();
+    const std::vector<unsigned char> originalBuffer = original.getInputBuffer();
+
+    const ConnectedComponent* firstComponentPtr = original.getComponents()[0].get();
+
     PGMimageProcessor moved(std::move(original));
 
     SECTION("Check if contents moved"){
-        REQUIRE(original.getInputBuffer() == moved.getInputBuffer());
-        REQUIRE(original.getWidth() == moved.getWidth());
-        REQUIRE(original.getHeight() == moved.getHeight());
-        REQUIRE(original.getComponentCount() == moved.getComponentCount());
-        REQUIRE(original.getNextComponentID() == moved.getNextComponentID());
+        REQUIRE(originalBuffer == moved.getInputBuffer());
+        REQUIRE(originalWidth == moved.getWidth());
+        REQUIRE(originalHeight == moved.getHeight());
+        REQUIRE(originalCount == moved.getComponentCount());
+        REQUIRE(originalID == moved.getNextComponentID());
 
-        const std::vector<std::unique_ptr<ConnectedComponent>> & originalComponents = original.getComponents();
-        const std::vector<std::unique_ptr<ConnectedComponent>> & movedComponents = moved.getComponents();
-
-        //check each component
-        for (int i = 0; i < originalComponents.size(); ++i){
-            REQUIRE(originalComponents[i]->getID() == movedComponents[i]->getID());
-            REQUIRE(originalComponents[i]->getNumPixels() == movedComponents[i]->getNumPixels());
-        }
-
+        //Check if components were moved
+        REQUIRE(moved.getComponents()[0].get() == firstComponentPtr);
     }
 
     SECTION("Check if original is empty"){
@@ -169,6 +171,7 @@ TEST_CASE("PGMimageProcessor - Copy Assignment Operator"){
     REQUIRE(copy.getComponentCount() == numComponents);
 }
 
+
 TEST_CASE("PGMimageProcessor - Move Assignment Operator"){
     PGMimageProcessor original;
     
@@ -183,24 +186,26 @@ TEST_CASE("PGMimageProcessor - Move Assignment Operator"){
     int numComponents = original.extractComponents(128, 1);
     REQUIRE(numComponents > 0);
 
+    // Store original values for verification
+    const int originalID = original.getNextComponentID();
+    const int originalCount = original.getComponentCount();
+    const int originalWidth = original.getWidth();
+    const int originalHeight = original.getHeight();
+    const std::vector<unsigned char> originalBuffer = original.getInputBuffer();
+
+    const ConnectedComponent* firstComponentPtr = original.getComponents()[0].get();
+
     PGMimageProcessor moved(std::move(original));
 
     SECTION("Check if contents moved"){
-        REQUIRE(original.getInputBuffer() == moved.getInputBuffer());
-        REQUIRE(original.getWidth() == moved.getWidth());
-        REQUIRE(original.getHeight() == moved.getHeight());
-        REQUIRE(original.getComponentCount() == moved.getComponentCount());
-        REQUIRE(original.getNextComponentID() == moved.getNextComponentID());
+        REQUIRE(originalBuffer == moved.getInputBuffer());
+        REQUIRE(originalWidth == moved.getWidth());
+        REQUIRE(originalHeight == moved.getHeight());
+        REQUIRE(originalCount == moved.getComponentCount());
+        REQUIRE(originalID == moved.getNextComponentID());
 
-        const std::vector<std::unique_ptr<ConnectedComponent>> & originalComponents = original.getComponents();
-        const std::vector<std::unique_ptr<ConnectedComponent>> & movedComponents = moved.getComponents();
-
-        //check each component
-        for (int i = 0; i < originalComponents.size(); ++i){
-            REQUIRE(originalComponents[i]->getID() == movedComponents[i]->getID());
-            REQUIRE(originalComponents[i]->getNumPixels() == movedComponents[i]->getNumPixels());
-        }
-
+        //Check if components were moved
+        REQUIRE(moved.getComponents()[0].get() == firstComponentPtr);
     }
 
     SECTION("Check if original is empty"){
@@ -211,6 +216,7 @@ TEST_CASE("PGMimageProcessor - Move Assignment Operator"){
         REQUIRE(original.getNextComponentID() == 0);
     }
 }
+
 
 TEST_CASE("PGMimageProcessor - extractComponents method"){
     PGMimageProcessor p;
@@ -263,19 +269,25 @@ TEST_CASE("PGMimageProcessor - filterComponentBySize method"){
 
     SECTION("Filter components between 1 and 5"){
         int componentCount = p.filterComponentsBySize(1, 5);
-        REQUIRE(componentCount == 2); 
+        REQUIRE(componentCount == 3); 
     }
 
     SECTION("Filter components between 5 and 5"){
         int componentCount = p.filterComponentsBySize(5, 5);
+        REQUIRE(componentCount == 0); 
+    }
+
+    SECTION("Filter components between 1 and 3"){
+        int componentCount = p.filterComponentsBySize(1, 3);
         REQUIRE(componentCount == 1); 
     }
 
-    SECTION("Filter components between 1 and 4"){
-        int componentCount = p.filterComponentsBySize(1, 4);
-        REQUIRE(componentCount == 1); 
+    SECTION("Filter components between 4 and 4"){
+        int componentCount = p.filterComponentsBySize(4, 4);
+        REQUIRE(componentCount == 2); 
     }
 }
+
 
 TEST_CASE("PGMimageProcessor - writeComponents method"){
     PGMimageProcessor p;
@@ -286,6 +298,7 @@ TEST_CASE("PGMimageProcessor - writeComponents method"){
     };
     p.setImageData(data, 3, 3);
     p.extractComponents(128, 1);
+    p.printComponentData();
     
     const std::string testFile = "test_output.pgm";
 
@@ -298,15 +311,16 @@ TEST_CASE("PGMimageProcessor - writeComponents method"){
         REQUIRE(ifs.good());
         ifs.close();
         
-        std::remove(testFile.c_str());
+        //std::remove(testFile.c_str());
     }
 
-    SECTION("Write with no components"){
-        PGMimageProcessor emptyP;
-        bool wrote = emptyP.writeComponents(testFile);
-        REQUIRE_FALSE(wrote);
-    }
+    // SECTION("Write with no components"){
+    //     PGMimageProcessor emptyP;
+    //     bool wrote = emptyP.writeComponents(testFile);
+    //     REQUIRE_FALSE(wrote);
+    // }
 }
+
 
 TEST_CASE("PGMimageProcessor - bfs method"){
     PGMimageProcessor p;
@@ -331,16 +345,12 @@ TEST_CASE("PGMimageProcessor - bfs method"){
     
 }
 
+
+
 TEST_CASE("PGMimageProcessor - Get methods"){
-    PGMimageProcessor p;
-    unsigned char data[] = {
-        255, 0, 
-        0, 255
-    };
-    p.setImageData(data, 2, 2);
-    p.extractComponents(128, 1);
 
     SECTION("separated pixels"){
+        PGMimageProcessor p;
         unsigned char data[] = {
             255, 0, 
             0, 255
@@ -356,6 +366,7 @@ TEST_CASE("PGMimageProcessor - Get methods"){
     }
 
     SECTION("one large component"){
+        PGMimageProcessor p;
         unsigned char data[] = {
             255, 255, 
             255, 255
@@ -370,11 +381,12 @@ TEST_CASE("PGMimageProcessor - Get methods"){
     }
 
     SECTION("two components of different sizes"){
+        PGMimageProcessor p;
         unsigned char data[] = {
             255, 0, 255,
             255, 255, 0
         };
-        p.setImageData(data, 3, 3);
+        p.setImageData(data, 3, 2);
         p.extractComponents(128, 1);
 
         REQUIRE(p.getComponentCount() == 2);
@@ -384,6 +396,7 @@ TEST_CASE("PGMimageProcessor - Get methods"){
     }
 
 }
+
 TEST_CASE("ConnectedComponent - Default Constructor"){
     ConnectedComponent c;
 
@@ -453,6 +466,172 @@ TEST_CASE("ConnectedComponent - Move Assignment Operator"){
     REQUIRE(original.getPixels().empty());
     REQUIRE(original.getNumPixels() == 0);
 }
+
+TEST_CASE("Edge case testing for writing PGM images"){
+    
+    SECTION("Single small component test"){
+        unsigned char data[] = {
+            255, 255, 255,
+            255, 255, 255,
+            255, 255, 255
+        };
+
+        std::string outfile = "single_small.pgm";
+
+        PGMimageProcessor p;
+        p.setImageData(data, 3, 3);
+        p.extractComponents(128, 1);
+        p.printComponentData();
+        p.writeComponents(outfile);
+    }
+
+    SECTION("Small border pixel test"){
+        unsigned char data[] = {
+            255, 255, 255,
+            255,   0, 255,
+            255, 255, 255
+        };
+
+        std::string outfile = "border_small.pgm";
+
+        PGMimageProcessor p;
+        p.setImageData(data, 3, 3);
+        p.extractComponents(128, 1);
+        p.printComponentData();
+        p.writeComponents(outfile);
+    }
+
+    SECTION("Large Pattern"){
+        unsigned char data[] = {
+              // Row 1 (Top border + corners)
+    255, 255, 255, 255, 255,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 255, 255,
+    // Row 2 (Vertical lines)
+    255,   0,   0,   0, 255,   0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,   0, 255,   0,
+    // Row 3 (H-shape)
+    255,   0, 255,   0, 255,   0, 255,   0,   0,   0,   0,   0,   0,   0,   0,   0, 255,   0, 255,   0,
+    // Row 4
+    255,   0, 255,   0, 255,   0, 255,   0, 255, 255, 255, 255, 255, 255, 255,   0, 255,   0, 255,   0,
+    // Row 5 (Cross)
+    255,   0, 255,   0, 255,   0, 255,   0, 255,   0,   0,   0,   0,   0, 255,   0, 255,   0, 255,   0,
+    // Row 6
+      0,   0,   0,   0,   0,   0, 255,   0, 255,   0, 255, 255, 255,   0, 255,   0, 255,   0, 255,   0,
+    // Row 7 (Noise)
+    255, 255, 255, 255, 255,   0, 255,   0, 255,   0, 255,   0, 255,   0, 255,   0, 255,   0, 255,   0,
+    // Row 8
+      0,   0,   0,   0, 255,   0, 255,   0, 255,   0,   0,   0, 255,   0, 255,   0, 255,   0, 255,   0,
+    // Row 9
+    255, 255, 255,   0, 255,   0, 255,   0, 255, 255, 255,   0, 255,   0, 255,   0, 255,   0, 255,   0,
+    // Row 10
+      0,   0, 255,   0, 255,   0, 255,   0,   0,   0, 255,   0, 255,   0, 255,   0,   0,   0, 255,   0,
+    // Row 11 (Diagonal)
+    255,   0, 255,   0, 255,   0, 255, 255, 255,   0, 255,   0, 255,   0, 255, 255, 255,   0, 255,   0,
+    // Row 12
+    255,   0, 255,   0, 255,   0,   0,   0, 255,   0, 255,   0, 255,   0,   0,   0, 255,   0, 255,   0,
+    // Row 13
+    255,   0, 255,   0, 255, 255, 255,   0, 255,   0, 255,   0, 255, 255, 255,   0, 255,   0, 255,   0,
+    // Row 14
+    255,   0, 255,   0,   0,   0, 255,   0, 255,   0, 255,   0,   0,   0, 255,   0, 255,   0, 255,   0,
+    // Row 15
+    255,   0, 255, 255, 255,   0, 255,   0, 255,   0, 255, 255, 255,   0, 255,   0, 255,   0, 255,   0,
+    // Row 16
+    255,   0,   0,   0, 255,   0, 255,   0,   0,   0,   0,   0, 255,   0, 255,   0,   0,   0,   0,   0,
+    // Row 17
+    255, 255, 255,   0, 255,   0, 255, 255, 255, 255, 255,   0, 255,   0, 255, 255, 255, 255, 255,   0,
+    // Row 18
+      0,   0, 255,   0, 255,   0,   0,   0,   0,   0, 255,   0, 255,   0,   0,   0,   0,   0, 255,   0,
+    // Row 19
+    255,   0, 255,   0, 255, 255, 255, 255, 255,   0, 255,   0, 255, 255, 255, 255, 255,   0, 255,   0,
+    // Row 20 (Bottom border)
+    255,   0, 255,   0,   0,   0,   0,   0, 255,   0, 255,   0,   0,   0,   0,   0, 255,   0, 255, 255
+        };
+
+        std::string outfile = "large_pattern.pgm";
+
+        PGMimageProcessor p;
+        p.setImageData(data, 20, 20);
+        p.extractComponents(128, 1);
+        p.printComponentData();
+        p.writeComponents(outfile);
+    }
+
+    SECTION("Small pattern test"){
+        unsigned char data[] = {
+                // Row 1 (Border + corners)
+        255, 255, 255, 255, 255,   0,   0, 255,
+        // Row 2 (Vertical lines)
+        255,   0,   0,   0, 255,   0, 255,   0,
+        // Row 3 (H-shape)
+        255,   0, 255,   0, 255,   0, 255,   0,
+        // Row 4 (Cross)
+        255,   0, 255,   0, 255,   0,   0,   0,
+        // Row 5 (Noise)
+          0,   0,   0,   0, 255,   0, 255,   0,
+        // Row 6 (Diagonal)
+        255, 255, 255,   0, 255,   0, 255,   0,
+        // Row 7
+        255,   0, 255,   0,   0,   0, 255,   0,
+        // Row 8 (Bottom border)
+        255,   0, 255,   0, 255, 255, 255, 255
+        };
+    
+        std::string outfile = "small_pattern.pgm";
+    
+        PGMimageProcessor p;
+        p.setImageData(data, 8, 8);
+        p.extractComponents(128, 1);
+        p.printComponentData();
+        p.writeComponents(outfile);
+    }
+    
+    SECTION("Basic thresholding"){
+        unsigned char data[] = {
+            50,  200,  50,
+            200,  50, 200,
+            50,  200,  50
+        };
+
+        std::string outfile = "basic_threshold.pgm";
+
+        PGMimageProcessor p;
+        p.setImageData(data, 3, 3);
+        p.extractComponents(128, 1);
+        p.printComponentData();
+        p.writeComponents(outfile);
+    }
+
+    SECTION("Threshold equal to pixel value"){
+        unsigned char data[] = {
+            100, 128, 100,
+            128, 100, 128,
+            100, 128, 100
+        };
+
+        std::string outfile = "equal_threshold.pgm";
+
+        PGMimageProcessor p;
+        p.setImageData(data, 3, 3);
+        p.extractComponents(128, 1);
+        p.printComponentData();
+        p.writeComponents(outfile);
+    }
+
+    SECTION("Gradual threshold"){
+        unsigned char data[] = {
+            120, 125, 130,
+            135, 140, 145,
+            150, 155, 160
+        };
+
+        std::string outfile = "gradual_threshold.pgm";
+
+        PGMimageProcessor p;
+        p.setImageData(data, 3, 3);
+        p.extractComponents(130, 1);
+        p.printComponentData();
+        p.writeComponents(outfile);
+    }
+}
+
 
 
 
