@@ -130,7 +130,7 @@ void PGMimageProcessor<T>::setImageData(T* data, int wd, int ht){
 
 
 /**
- * Method that reads PGM image
+ * Method that reads PGM image (Specialised for PGM images)
  * @param fileName: Name of the PGM image being read
  */
 template<>
@@ -183,8 +183,61 @@ void PGMimageProcessor<unsigned char>::read(const string& fileName){
 }
 
 /**
+ * Method that reads PGM image (Specialised for PPM images)
+ * @param fileName: Name of the PGM image being read
+ */
+template<>
+void PGMimageProcessor<std::array<unsigned char, 3>>::read(const string& fileName){
+
+    ifstream ifs(fileName, ios::binary);
+    if (!ifs)
+    {
+        cerr << "Failed top open file for read: " << fileName << endl;
+        return;
+    }
+    string line;
+    ifs >> line >> ws;
+    if (line != "P6")
+    {
+        cerr << "Malformed PPM file - magic is: " << line << endl;
+        return;
+    }
+    while (getline(ifs, line))
+    {
+        //cout << line << endl;
+        if (line[0] != '#') break;
+    }
+    istringstream iss(line);
+    iss >> width >> height;
+    //cout << "width, height = (" << width << "," << height << ")\n";
+
+    if (!iss)
+    {
+        cerr << "Header not correct - unexpected image sizes found: " << line << endl;
+        return;
+    }
+    int maxChan = 0;
+    ifs >> maxChan >> ws;
+    if (maxChan != 255)
+    {
+        cerr << "Max grey level incorect - found: " << maxChan << endl;
+    }
+    // start of binary block
+
+    inputBuffer.resize(width * height);
+    ifs.read(reinterpret_cast<char*>(inputBuffer.data()), width * height * 3);
+
+    if (!ifs)
+    {
+        cerr << "Failed to read binary block - read\n";
+    }
+
+    ifs.close();
+}
+
+/**
  * Method that extracts all the connected components, based on the supplied threshold and excluding any components
- * less than minValidSize
+ * less than minValidSize (Specialised for PGM images)
  * @param threshold: user-defined threshold
  * @param minValidSize: specified minimum valid size of connected components
  * 
@@ -230,6 +283,62 @@ int PGMimageProcessor<unsigned char>::extractComponents(unsigned char threshold,
 }
 
 /**
+ * Method that extracts all the connected components, based on the supplied threshold and excluding any components
+ * less than minValidSize. (Specialised for PPM images)
+ * @param threshold: user-defined threshold
+ * @param minValidSize: specified minimum valid size of connected components
+ * 
+ */
+template <>
+int PGMimageProcessor<std::array<unsigned char, 3>>::extractComponents(unsigned char threshold, int minValidSize){
+
+
+    std::vector<unsigned char> grey(width * height);
+    for (int i = 0 ; i < width * height; i++){
+        grey[i] = 0.299f * inputBuffer[i][0] + 0.587f * inputBuffer[i][1] + 0.144f * inputBuffer[i][2];
+    }
+
+    //Convert grayscale image pixels to 255 or 0
+    for (int i = 0; i < (width * height); i++){
+        if (grey[i] >= threshold){
+            grey[i] = 255;
+        }
+        else{
+            grey[i] = 0;
+        }
+    }
+
+    //Only do BFS on pixels that are 255
+    for (int y = 0; y < height; y++){
+        for (int x = 0; x < width; x++){
+            if (grey[y * width + x] == 255){
+                ConnectedComponent component;
+
+                bfs(x, y, component);
+
+                // Only store components that are less than greater than minValid size
+                if (component.getNumPixels() >= minValidSize){
+                    //Assign a permanent unique ID to the component
+                    component.setID(nextComponentID++);
+                    components.push_back(std::make_unique<ConnectedComponent>(component));
+                }
+            }
+        }
+    }
+
+    //Delete original image from memory after processing
+    inputBuffer.clear();
+    inputBuffer.shrink_to_fit();
+
+    //Delete grey from memory
+    grey.clear();
+    grey.shrink_to_fit();
+
+    return components.size();
+
+}
+
+/**
  * Method that iterates through container of components and filters all the components which do not obey the size 
  * criteria
  * @param minSize: minimum size criteria
@@ -259,7 +368,7 @@ int PGMimageProcessor<T>::filterComponentsBySize(int minSize, int maxSize){
 
 /**
  * Method that creates a new PGM file which contains all available components
- * @param outFileName: name of the output PGM file
+ * @param outFileName: name of the output PGM file (Specialised for PGM images)
  */
 template<>
 bool PGMimageProcessor<unsigned char>::writeComponents(const std::string & outFileName){
@@ -295,6 +404,53 @@ bool PGMimageProcessor<unsigned char>::writeComponents(const std::string & outFi
 
     if (!ofs){
         cerr << "Error writing binary block of PGM.\n";
+
+        return false;
+    }
+
+    ofs.close();
+
+    return true;
+
+}
+
+/**
+ * Method that creates a new PGM file which contains all available components
+ * @param outFileName: name of the output PGM file. (Specialise for PPM images)
+ */
+template<>
+bool PGMimageProcessor<std::array<unsigned char, 3>>::writeComponents(const std::string & outFileName){
+
+    //No components to write
+    if (components.empty()){
+        return false;
+    }
+
+    //Initialise output image inputBuffer filled with 0s
+    std::vector<std::array<unsigned char, 3>> outputBuffer(width * height, {0, 0, 0});
+
+    //Set pixels of components to 255
+    for (const unique_ptr<ConnectedComponent> & component: components){
+        for (const pair<int,int> & pixelCoord: component->getPixels()){
+            int x = pixelCoord.first;
+            int y = pixelCoord.second;
+            outputBuffer[y * width + x] = {255, 255, 255};
+        }
+    }
+
+    //Write output buffer to file
+    ofstream ofs(outFileName, ios::binary);
+
+    if (!ofs){
+        cerr << "Unable to open PPM output file " << outFileName << endl;
+        return false;
+    }
+
+    ofs << "P6\n" << width << " " << height << endl << 255 << endl;
+    ofs.write(reinterpret_cast<const char*>(outputBuffer.data()), width * height * 3);
+
+    if (!ofs){
+        cerr << "Error writing binary block of PPM.\n";
 
         return false;
     }
