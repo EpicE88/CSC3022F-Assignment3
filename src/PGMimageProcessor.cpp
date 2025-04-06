@@ -20,17 +20,20 @@ using namespace std;
 /**
  * Default constructor
  */
-PGMimageProcessor::PGMimageProcessor(): inputBuffer(), width(0), height(0) , nextComponentID(0), components(){}
+template <typename T>
+PGMimageProcessor<T>::PGMimageProcessor(): inputBuffer(), width(0), height(0) , nextComponentID(0), components(){}
 
 /**
  * Destructor
  */
-PGMimageProcessor::~PGMimageProcessor(){}
+template <typename T>
+PGMimageProcessor<T>::~PGMimageProcessor(){}
 
 /**
  * Copy Constructor
  */
-PGMimageProcessor::PGMimageProcessor(const PGMimageProcessor & other): inputBuffer(other.inputBuffer), width(other.width), height(other.height), 
+template <typename T>
+PGMimageProcessor<T>::PGMimageProcessor(const PGMimageProcessor & other): inputBuffer(other.inputBuffer), width(other.width), height(other.height), 
     nextComponentID(other.nextComponentID){
 
         //Can't make a copy of a unique ptr. 
@@ -43,7 +46,8 @@ PGMimageProcessor::PGMimageProcessor(const PGMimageProcessor & other): inputBuff
 /**
  * Copy Assignment Operator
  */
-PGMimageProcessor & PGMimageProcessor::operator=(const PGMimageProcessor & other){
+template <typename T>
+PGMimageProcessor<T> & PGMimageProcessor<T>::operator=(const PGMimageProcessor & other){
 
     //Check for self assignment
     if (this != &other){
@@ -65,7 +69,8 @@ PGMimageProcessor & PGMimageProcessor::operator=(const PGMimageProcessor & other
 /**
  * Move Constructor
  */
-PGMimageProcessor::PGMimageProcessor(PGMimageProcessor && rhs): inputBuffer(std::move(rhs.inputBuffer)), 
+template <typename T>
+PGMimageProcessor<T>::PGMimageProcessor(PGMimageProcessor && rhs): inputBuffer(std::move(rhs.inputBuffer)), 
     width(rhs.width), height(rhs.height), components(std::move(rhs.components)), 
     nextComponentID(rhs.nextComponentID){
         rhs.width = 0;
@@ -76,7 +81,8 @@ PGMimageProcessor::PGMimageProcessor(PGMimageProcessor && rhs): inputBuffer(std:
 /**
  * Move Assignment Operator
  */
-PGMimageProcessor & PGMimageProcessor::operator=(PGMimageProcessor && rhs){
+template <typename T>
+PGMimageProcessor<T> & PGMimageProcessor<T>::operator=(PGMimageProcessor && rhs){
 
     //Check for self assignment
     if (this != &rhs){
@@ -108,7 +114,8 @@ PGMimageProcessor & PGMimageProcessor::operator=(PGMimageProcessor && rhs){
  * @param wd: width
  * @param ht: height
  */
-void PGMimageProcessor::setImageData(unsigned char* data, int wd, int ht){
+template <typename T>
+void PGMimageProcessor<T>::setImageData(T* data, int wd, int ht){
     if (data == nullptr || wd < 1 || ht < 1)
     {
         cerr << "setImageData() invalid data specified - aborted.\n";
@@ -126,7 +133,8 @@ void PGMimageProcessor::setImageData(unsigned char* data, int wd, int ht){
  * Method that reads PGM image
  * @param fileName: Name of the PGM image being read
  */
-void PGMimageProcessor::read(const string& fileName){
+template<>
+void PGMimageProcessor<unsigned char>::read(const string& fileName){
 
     ifstream ifs(fileName, ios::binary);
     if (!ifs)
@@ -181,7 +189,8 @@ void PGMimageProcessor::read(const string& fileName){
  * @param minValidSize: specified minimum valid size of connected components
  * 
  */
-int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSize){
+template <>
+int PGMimageProcessor<unsigned char>::extractComponents(unsigned char threshold, int minValidSize){
 
 
     //Convert grayscale image pixels to 255 or 0
@@ -226,7 +235,8 @@ int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSi
  * @param minSize: minimum size criteria
  * @param maxSize: maximum size criteria
  */
-int PGMimageProcessor::filterComponentsBySize(int minSize, int maxSize){
+template <typename T>
+int PGMimageProcessor<T>::filterComponentsBySize(int minSize, int maxSize){
 
     //Bounds checking
     if (minSize < 0 || maxSize < 0 || minSize > maxSize){
@@ -251,7 +261,8 @@ int PGMimageProcessor::filterComponentsBySize(int minSize, int maxSize){
  * Method that creates a new PGM file which contains all available components
  * @param outFileName: name of the output PGM file
  */
-bool PGMimageProcessor::writeComponents(const std::string & outFileName){
+template<>
+bool PGMimageProcessor<unsigned char>::writeComponents(const std::string & outFileName){
 
     //No components to write
     if (components.empty()){
@@ -297,14 +308,16 @@ bool PGMimageProcessor::writeComponents(const std::string & outFileName){
 /**
  * Method that return s the number of components
  */
-int PGMimageProcessor::getComponentCount(void) const{
+template <typename T>
+int PGMimageProcessor<T>::getComponentCount(void) const{
     return components.size();
 }
 
 /**
  * Method that returns the number of pixels in largest component
  */
-int PGMimageProcessor::getLargestSize(void) const{
+template <typename T>
+int PGMimageProcessor<T>::getLargestSize(void) const{
     if(components.empty())
         return 0;
 
@@ -322,7 +335,8 @@ int PGMimageProcessor::getLargestSize(void) const{
 /**
  * Method that returns the number of pixels in smallest component
  */
-int PGMimageProcessor::getSmallestSize(void) const{
+template <typename T>
+int PGMimageProcessor<T>::getSmallestSize(void) const{
     if (components.empty())
         return 0;
 
@@ -341,14 +355,16 @@ int PGMimageProcessor::getSmallestSize(void) const{
  * Method that prints the data for a component to std::cout 
  * @param component: the component that will be printed
  */
-void PGMimageProcessor::printComponentData(const ConnectedComponent & component) const{
+template <typename T>
+void PGMimageProcessor<T>::printComponentData(const ConnectedComponent & component) const{
     cout << "Component ID: " << component.getID() << ", Number of pixels: " << component.getNumPixels() << endl;
 } 
 
 /**
  * Method that prints component data for all components in a format
  */
-void PGMimageProcessor::printComponentData() const{
+template <typename T>
+void PGMimageProcessor<T>::printComponentData() const{
 
     if (components.empty()){
         cout << "There are no components to display" << endl;
@@ -380,7 +396,8 @@ void PGMimageProcessor::printComponentData() const{
  * @param x: y-coordinate of pixel
  * @param component: the connected component 
  */
-void PGMimageProcessor::bfs(int x, int y, ConnectedComponent & component){
+template <typename T>
+void PGMimageProcessor<T>::bfs(int x, int y, ConnectedComponent & component){
     
     //Initialise the queue
     std::queue<std::pair<int,int>> q;
@@ -427,35 +444,40 @@ void PGMimageProcessor::bfs(int x, int y, ConnectedComponent & component){
 /**
  * Get Method. Returns the inputBuffer
  */
-const std::vector<unsigned char> & PGMimageProcessor::getInputBuffer() const{
+template <typename T>
+const std::vector<T> & PGMimageProcessor<T>::getInputBuffer() const{
     return inputBuffer;
 }
 
 /**
  * Get Method. Returns width
  */
-int PGMimageProcessor::getWidth() const{
+template <typename T>
+int PGMimageProcessor<T>::getWidth() const{
     return width;
 }
 
 /**
  * Get Method. Returns height
  */
-int PGMimageProcessor::getHeight() const{
+template <typename T>
+int PGMimageProcessor<T>::getHeight() const{
     return height;
 }
 
 /**
  * Get Method. Returns a const referencvcve to components vector
  */
-const std::vector<std::unique_ptr<ConnectedComponent>>& PGMimageProcessor::getComponents() const {
+template <typename T>
+const std::vector<std::unique_ptr<ConnectedComponent>>& PGMimageProcessor<T>::getComponents() const {
     return components;
 }
 
 /**
  * Get Method. returns nextComponentID
  */
-int PGMimageProcessor::getNextComponentID() const{
+template <typename T>
+int PGMimageProcessor<T>::getNextComponentID() const{
     return nextComponentID;
 }
 
