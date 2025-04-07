@@ -130,7 +130,7 @@ void PGMimageProcessor<T>::setImageData(T* data, int wd, int ht){
 
 
 /**
- * Method that reads PGM image
+ * Method that reads PGM image (Specialised for PGM)
  * @param fileName: Name of the PGM image being read
  */
 template<>
@@ -598,6 +598,7 @@ int PGMimageProcessor<T>::getNextComponentID() const{
     return nextComponentID;
 }
 
-
+template class PGMimageProcessor<unsigned char>;
+template class PGMimageProcessor<std::array<unsigned char, 3>>;
 
 

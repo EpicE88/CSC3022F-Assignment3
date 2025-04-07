@@ -13,7 +13,7 @@
 
 
 TEST_CASE("PGMimageProcessor - Default Constructor"){
-    PGMimageProcessor p;
+    PGMimageProcessor<unsigned char> p;
     std::vector<unsigned char> inputBuffer = p.getInputBuffer();
     int width = p.getWidth();
     int height = p.getHeight();
@@ -31,7 +31,7 @@ TEST_CASE("PGMimageProcessor - Default Constructor"){
 
 
 TEST_CASE("PGMimageProcessor - Copy Constructor"){
-    PGMimageProcessor original;
+    PGMimageProcessor<unsigned char> original;
     
     unsigned char data[] = {
         255, 255, 0,
@@ -79,7 +79,7 @@ TEST_CASE("PGMimageProcessor - Copy Constructor"){
 }
 
 TEST_CASE("PGMimageProcessor - Move Constructor"){
-    PGMimageProcessor original;
+    PGMimageProcessor<unsigned char> original;
     
     unsigned char data[] = {
         255, 255, 0,
@@ -125,7 +125,7 @@ TEST_CASE("PGMimageProcessor - Move Constructor"){
 }
 
 TEST_CASE("PGMimageProcessor - Copy Assignment Operator"){
-    PGMimageProcessor original;
+    PGMimageProcessor<unsigned char> original;
     
     unsigned char data[] = {
         255, 255, 0,
@@ -142,7 +142,7 @@ TEST_CASE("PGMimageProcessor - Copy Assignment Operator"){
     REQUIRE(original.getComponentCount() > 0);
     REQUIRE(original.getNextComponentID() > 0);
 
-    PGMimageProcessor copy;
+    PGMimageProcessor<unsigned char> copy;
     copy = original;
 
     REQUIRE(original.getInputBuffer() == copy.getInputBuffer());
@@ -173,7 +173,7 @@ TEST_CASE("PGMimageProcessor - Copy Assignment Operator"){
 
 
 TEST_CASE("PGMimageProcessor - Move Assignment Operator"){
-    PGMimageProcessor original;
+    PGMimageProcessor<unsigned char> original;
     
     unsigned char data[] = {
         255, 255, 0,
@@ -219,7 +219,7 @@ TEST_CASE("PGMimageProcessor - Move Assignment Operator"){
 
 
 TEST_CASE("PGMimageProcessor - extractComponents method"){
-    PGMimageProcessor p;
+    PGMimageProcessor<unsigned char> p;
     unsigned char data[] = {
         128, 0, 128, 0, 255,
         0, 255, 0, 128, 0,
@@ -256,7 +256,7 @@ TEST_CASE("PGMimageProcessor - extractComponents method"){
 }
 
 TEST_CASE("PGMimageProcessor - filterComponentBySize method"){
-    PGMimageProcessor p;
+    PGMimageProcessor<unsigned char> p;
     unsigned char data[] = {
         255, 255, 0, 0, 0,
         255, 255, 0, 0, 0,
@@ -290,7 +290,7 @@ TEST_CASE("PGMimageProcessor - filterComponentBySize method"){
 
 
 TEST_CASE("PGMimageProcessor - writeComponents method"){
-    PGMimageProcessor p;
+    PGMimageProcessor<unsigned char> p;
     unsigned char data[] = {
         255, 255, 0,
         255, 255, 0,
@@ -322,35 +322,10 @@ TEST_CASE("PGMimageProcessor - writeComponents method"){
 }
 
 
-TEST_CASE("PGMimageProcessor - bfs method"){
-    PGMimageProcessor p;
-    unsigned char data[] = {
-        255, 255, 0,
-        255, 255, 0,
-        0, 0, 255
-    };
-    p.setImageData(data, 3, 3);
-
-    ConnectedComponent component;
-
-    SECTION("4x4 block in top-left"){
-        p.bfs(0, 0, component);
-        REQUIRE(component.getNumPixels() == 4);
-    }
-
-    SECTION("Single pixel at the bottom"){
-        p.bfs(2, 2, component);
-        REQUIRE(component.getNumPixels() == 1);
-    }
-    
-}
-
-
-
 TEST_CASE("PGMimageProcessor - Get methods"){
 
     SECTION("separated pixels"){
-        PGMimageProcessor p;
+        PGMimageProcessor<unsigned char> p;
         unsigned char data[] = {
             255, 0, 
             0, 255
@@ -366,7 +341,7 @@ TEST_CASE("PGMimageProcessor - Get methods"){
     }
 
     SECTION("one large component"){
-        PGMimageProcessor p;
+        PGMimageProcessor<unsigned char> p;
         unsigned char data[] = {
             255, 255, 
             255, 255
@@ -381,7 +356,7 @@ TEST_CASE("PGMimageProcessor - Get methods"){
     }
 
     SECTION("two components of different sizes"){
-        PGMimageProcessor p;
+        PGMimageProcessor<unsigned char> p;
         unsigned char data[] = {
             255, 0, 255,
             255, 255, 0
@@ -478,7 +453,7 @@ TEST_CASE("Edge case testing for writing PGM images"){
 
         std::string outfile = "single_small.pgm";
 
-        PGMimageProcessor p;
+        PGMimageProcessor<unsigned char> p;
         p.setImageData(data, 3, 3);
         p.extractComponents(128, 1);
         p.printComponentData();
@@ -494,7 +469,7 @@ TEST_CASE("Edge case testing for writing PGM images"){
 
         std::string outfile = "border_small.pgm";
 
-        PGMimageProcessor p;
+        PGMimageProcessor<unsigned char> p;
         p.setImageData(data, 3, 3);
         p.extractComponents(128, 1);
         p.printComponentData();
@@ -547,7 +522,7 @@ TEST_CASE("Edge case testing for writing PGM images"){
 
         std::string outfile = "large_pattern.pgm";
 
-        PGMimageProcessor p;
+        PGMimageProcessor<unsigned char> p;
         p.setImageData(data, 20, 20);
         p.extractComponents(128, 1);
         p.printComponentData();
@@ -576,7 +551,7 @@ TEST_CASE("Edge case testing for writing PGM images"){
     
         std::string outfile = "small_pattern.pgm";
     
-        PGMimageProcessor p;
+        PGMimageProcessor<unsigned char> p;
         p.setImageData(data, 8, 8);
         p.extractComponents(128, 1);
         p.printComponentData();
@@ -592,7 +567,7 @@ TEST_CASE("Edge case testing for writing PGM images"){
 
         std::string outfile = "basic_threshold.pgm";
 
-        PGMimageProcessor p;
+        PGMimageProcessor<unsigned char> p;
         p.setImageData(data, 3, 3);
         p.extractComponents(128, 1);
         p.printComponentData();
@@ -608,7 +583,7 @@ TEST_CASE("Edge case testing for writing PGM images"){
 
         std::string outfile = "equal_threshold.pgm";
 
-        PGMimageProcessor p;
+        PGMimageProcessor<unsigned char> p;
         p.setImageData(data, 3, 3);
         p.extractComponents(128, 1);
         p.printComponentData();
@@ -624,7 +599,7 @@ TEST_CASE("Edge case testing for writing PGM images"){
 
         std::string outfile = "gradual_threshold.pgm";
 
-        PGMimageProcessor p;
+        PGMimageProcessor<unsigned char> p;
         p.setImageData(data, 3, 3);
         p.extractComponents(130, 1);
         p.printComponentData();

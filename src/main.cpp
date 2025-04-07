@@ -10,7 +10,7 @@
 #include "PGMimageProcessor.h"
 #include <climits>
 
-int main(char argc, char * argv[]){
+int main(int argc, char * argv[]){
 
 // Default command-line arguments
 int minComponentSize = 1;  
@@ -61,7 +61,7 @@ if (!outFileName.empty() && outFileName[0] == '-') {
     return 1;
 }
 
-    PGMimageProcessor imageProcessor;
+    PGMimageProcessor<unsigned char> imageProcessor;
 
     imageProcessor.read(inFileName);
     imageProcessor.extractComponents(threshold, minComponentSize);
