@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <climits>
 
 #include "PGMimageProcessor.h"
 
@@ -20,17 +21,20 @@ using namespace std;
 /**
  * Default constructor
  */
-PGMimageProcessor::PGMimageProcessor(): inputBuffer(), width(0), height(0) , nextComponentID(0), components(){}
+template <typename T>
+PGMimageProcessor<T>::PGMimageProcessor(): inputBuffer(), width(0), height(0) , nextComponentID(0), components(){}
 
 /**
  * Destructor
  */
-PGMimageProcessor::~PGMimageProcessor(){}
+template <typename T>
+PGMimageProcessor<T>::~PGMimageProcessor(){}
 
 /**
  * Copy Constructor
  */
-PGMimageProcessor::PGMimageProcessor(const PGMimageProcessor & other): inputBuffer(other.inputBuffer), width(other.width), height(other.height), 
+template <typename T>
+PGMimageProcessor<T>::PGMimageProcessor(const PGMimageProcessor & other): inputBuffer(other.inputBuffer), width(other.width), height(other.height), 
     nextComponentID(other.nextComponentID){
 
         //Can't make a copy of a unique ptr. 
@@ -43,7 +47,8 @@ PGMimageProcessor::PGMimageProcessor(const PGMimageProcessor & other): inputBuff
 /**
  * Copy Assignment Operator
  */
-PGMimageProcessor & PGMimageProcessor::operator=(const PGMimageProcessor & other){
+template <typename T>
+PGMimageProcessor<T> & PGMimageProcessor<T>::operator=(const PGMimageProcessor & other){
 
     //Check for self assignment
     if (this != &other){
@@ -65,7 +70,8 @@ PGMimageProcessor & PGMimageProcessor::operator=(const PGMimageProcessor & other
 /**
  * Move Constructor
  */
-PGMimageProcessor::PGMimageProcessor(PGMimageProcessor && rhs): inputBuffer(std::move(rhs.inputBuffer)), 
+template <typename T>
+PGMimageProcessor<T>::PGMimageProcessor(PGMimageProcessor && rhs): inputBuffer(std::move(rhs.inputBuffer)), 
     width(rhs.width), height(rhs.height), components(std::move(rhs.components)), 
     nextComponentID(rhs.nextComponentID){
         rhs.width = 0;
@@ -76,7 +82,8 @@ PGMimageProcessor::PGMimageProcessor(PGMimageProcessor && rhs): inputBuffer(std:
 /**
  * Move Assignment Operator
  */
-PGMimageProcessor & PGMimageProcessor::operator=(PGMimageProcessor && rhs){
+template <typename T>
+PGMimageProcessor<T> & PGMimageProcessor<T>::operator=(PGMimageProcessor && rhs){
 
     //Check for self assignment
     if (this != &rhs){
@@ -108,7 +115,8 @@ PGMimageProcessor & PGMimageProcessor::operator=(PGMimageProcessor && rhs){
  * @param wd: width
  * @param ht: height
  */
-void PGMimageProcessor::setImageData(unsigned char* data, int wd, int ht){
+template <typename T>
+void PGMimageProcessor<T>::setImageData(T* data, int wd, int ht){
     if (data == nullptr || wd < 1 || ht < 1)
     {
         cerr << "setImageData() invalid data specified - aborted.\n";
@@ -123,10 +131,11 @@ void PGMimageProcessor::setImageData(unsigned char* data, int wd, int ht){
 
 
 /**
- * Method that reads PGM image
+ * Method that reads PGM image (Specialised for PGM)
  * @param fileName: Name of the PGM image being read
  */
-void PGMimageProcessor::read(const string& fileName){
+template<>
+void PGMimageProcessor<unsigned char>::read(const string& fileName){
 
     ifstream ifs(fileName, ios::binary);
     if (!ifs)
@@ -175,32 +184,99 @@ void PGMimageProcessor::read(const string& fileName){
 }
 
 /**
+ * Method that reads PGM image (Specialised for PPM images)
+ * @param fileName: Name of the PGM image being read
+ */
+template<>
+void PGMimageProcessor<std::array<unsigned char, 3>>::read(const string& fileName){
+
+    ifstream ifs(fileName, ios::binary);
+    if (!ifs)
+    {
+        cerr << "Failed top open file for read: " << fileName << endl;
+        return;
+    }
+    string line;
+    ifs >> line >> ws;
+    if (line != "P6")
+    {
+        cerr << "Malformed PPM file - magic is: " << line << endl;
+        return;
+    }
+    while (getline(ifs, line))
+    {
+        //cout << line << endl;
+        if (line[0] != '#') break;
+    }
+    istringstream iss(line);
+    iss >> width >> height;
+    //cout << "width, height = (" << width << "," << height << ")\n";
+
+    if (!iss)
+    {
+        cerr << "Header not correct - unexpected image sizes found: " << line << endl;
+        return;
+    }
+    int maxChan = 0;
+    ifs >> maxChan >> ws;
+    if (maxChan != 255)
+    {
+        cerr << "Max grey level incorect - found: " << maxChan << endl;
+    }
+    // start of binary block
+
+    inputBuffer.resize(width * height);
+    ifs.read(reinterpret_cast<char*>(inputBuffer.data()), width * height * 3);
+
+    if (!ifs)
+    {
+        cerr << "Failed to read binary block - read\n";
+    }
+
+    ifs.close();
+}
+
+/**
  * Method that extracts all the connected components, based on the supplied threshold and excluding any components
- * less than minValidSize
+ * less than minValidSize (Specialised for PGM images)
  * @param threshold: user-defined threshold
  * @param minValidSize: specified minimum valid size of connected components
  * 
  */
-int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSize){
+template <typename T>
+int PGMimageProcessor<T>::extractComponents(unsigned char threshold, int minValidSize){
 
+    std::vector<unsigned char> grey(width * height);
+
+    grey.resize(width * height);
+    if constexpr (std::is_same_v<T, std::array<unsigned char, 3>>){
+        
+        for (int i = 0; i < width * height; i++){
+            grey[i] = 0.299f * inputBuffer[i][0] + 0.587f * inputBuffer[i][1] + 0.114f * inputBuffer[i][2];
+        }
+        
+    }
+    else{
+        std::copy(inputBuffer.begin(), inputBuffer.end(), grey.begin());
+    }
 
     //Convert grayscale image pixels to 255 or 0
     for (int i = 0; i < (width * height); i++){
-        if (inputBuffer[i] >= threshold){
-            inputBuffer[i] = 255;
+        if (grey[i] >= threshold){
+            grey[i] = 255;
         }
         else{
-            inputBuffer[i] = 0;
+            grey[i] = 0;
         }
     }
 
     //Only do BFS on pixels that are 255
     for (int y = 0; y < height; y++){
         for (int x = 0; x < width; x++){
-            if (inputBuffer[y * width + x] == 255){
+            if (grey[y * width + x] == 255){
                 ConnectedComponent component;
 
-                bfs(x, y, component);
+                bfs(x, y, component, grey);
 
                 // Only store components that are less than greater than minValid size
                 if (component.getNumPixels() >= minValidSize){
@@ -216,9 +292,13 @@ int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSi
     inputBuffer.clear();
     inputBuffer.shrink_to_fit();
 
+    grey.clear();
+    grey.shrink_to_fit();
+
     return components.size();
 
 }
+
 
 /**
  * Method that iterates through container of components and filters all the components which do not obey the size 
@@ -226,7 +306,8 @@ int PGMimageProcessor::extractComponents(unsigned char threshold, int minValidSi
  * @param minSize: minimum size criteria
  * @param maxSize: maximum size criteria
  */
-int PGMimageProcessor::filterComponentsBySize(int minSize, int maxSize){
+template <typename T>
+int PGMimageProcessor<T>::filterComponentsBySize(int minSize, int maxSize){
 
     //Bounds checking
     if (minSize < 0 || maxSize < 0 || minSize > maxSize){
@@ -249,9 +330,10 @@ int PGMimageProcessor::filterComponentsBySize(int minSize, int maxSize){
 
 /**
  * Method that creates a new PGM file which contains all available components
- * @param outFileName: name of the output PGM file
+ * @param outFileName: name of the output PGM file (Specialised for PGM images)
  */
-bool PGMimageProcessor::writeComponents(const std::string & outFileName){
+template<>
+bool PGMimageProcessor<unsigned char>::writeComponents(const std::string & outFileName){
 
     //No components to write
     if (components.empty()){
@@ -295,16 +377,65 @@ bool PGMimageProcessor::writeComponents(const std::string & outFileName){
 }
 
 /**
+ * Method that creates a new PGM file which contains all available components
+ * @param outFileName: name of the output PGM file. (Specialise for PPM images)
+ */
+template<>
+bool PGMimageProcessor<std::array<unsigned char, 3>>::writeComponents(const std::string & outFileName){
+
+    //No components to write
+    if (components.empty()){
+        return false;
+    }
+
+    //Initialise output image inputBuffer filled with 0s
+    std::vector<std::array<unsigned char, 3>> outputBuffer(width * height, {0, 0, 0});
+
+    //Set pixels of components to 255
+    for (const unique_ptr<ConnectedComponent> & component: components){
+        for (const pair<int,int> & pixelCoord: component->getPixels()){
+            int x = pixelCoord.first;
+            int y = pixelCoord.second;
+            outputBuffer[y * width + x] = {255, 255, 255};
+        }
+    }
+
+    //Write output buffer to file
+    ofstream ofs(outFileName, ios::binary);
+
+    if (!ofs){
+        cerr << "Unable to open PPM output file " << outFileName << endl;
+        return false;
+    }
+
+    ofs << "P6\n" << width << " " << height << endl << 255 << endl;
+    ofs.write(reinterpret_cast<const char*>(outputBuffer.data()), width * height * 3);
+
+    if (!ofs){
+        cerr << "Error writing binary block of PPM.\n";
+
+        return false;
+    }
+
+    ofs.close();
+
+    return true;
+
+}
+
+/**
  * Method that return s the number of components
  */
-int PGMimageProcessor::getComponentCount(void) const{
+template <typename T>
+int PGMimageProcessor<T>::getComponentCount(void) const{
     return components.size();
 }
 
 /**
  * Method that returns the number of pixels in largest component
  */
-int PGMimageProcessor::getLargestSize(void) const{
+template <typename T>
+int PGMimageProcessor<T>::getLargestSize(void) const{
     if(components.empty())
         return 0;
 
@@ -322,11 +453,12 @@ int PGMimageProcessor::getLargestSize(void) const{
 /**
  * Method that returns the number of pixels in smallest component
  */
-int PGMimageProcessor::getSmallestSize(void) const{
+template <typename T>
+int PGMimageProcessor<T>::getSmallestSize(void) const{
     if (components.empty())
         return 0;
 
-    int minPixelNum = 999;
+    int minPixelNum = INT_MAX;
 
     for (const unique_ptr<ConnectedComponent> & component: components){
         if (component->getNumPixels() <= minPixelNum){
@@ -341,14 +473,16 @@ int PGMimageProcessor::getSmallestSize(void) const{
  * Method that prints the data for a component to std::cout 
  * @param component: the component that will be printed
  */
-void PGMimageProcessor::printComponentData(const ConnectedComponent & component) const{
+template <typename T>
+void PGMimageProcessor<T>::printComponentData(const ConnectedComponent & component) const{
     cout << "Component ID: " << component.getID() << ", Number of pixels: " << component.getNumPixels() << endl;
 } 
 
 /**
  * Method that prints component data for all components in a format
  */
-void PGMimageProcessor::printComponentData() const{
+template <typename T>
+void PGMimageProcessor<T>::printComponentData() const{
 
     if (components.empty()){
         cout << "There are no components to display" << endl;
@@ -380,7 +514,8 @@ void PGMimageProcessor::printComponentData() const{
  * @param x: y-coordinate of pixel
  * @param component: the connected component 
  */
-void PGMimageProcessor::bfs(int x, int y, ConnectedComponent & component){
+template <typename T>
+void PGMimageProcessor<T>::bfs(int x, int y, ConnectedComponent & component, std::vector<unsigned char> & grey){
     
     //Initialise the queue
     std::queue<std::pair<int,int>> q;
@@ -389,7 +524,7 @@ void PGMimageProcessor::bfs(int x, int y, ConnectedComponent & component){
     q.push({x, y});
     
     //Mark starting pixel as visited
-    inputBuffer[y * width + x] = 0; 
+    grey[y * width + x] = 0; 
 
     //Process pixels until there are non in the queue
     while(!q.empty()){
@@ -412,8 +547,8 @@ void PGMimageProcessor::bfs(int x, int y, ConnectedComponent & component){
             //Check if neighbour is withn boundaries
             if ((xNeighbour >= 0 && xNeighbour < width) && (yNeighbour >= 0 && yNeighbour < height)){
                 //Check if neighbour is unvisited
-                if (inputBuffer[yNeighbour * width + xNeighbour] == 255){
-                    inputBuffer[yNeighbour * width + xNeighbour] = 0; // mark as visited
+                if (grey[yNeighbour * width + xNeighbour] == 255){
+                    grey[yNeighbour * width + xNeighbour] = 0; // mark as visited
                     q.push(std::make_pair(xNeighbour, yNeighbour));
                 }
             }
@@ -427,38 +562,110 @@ void PGMimageProcessor::bfs(int x, int y, ConnectedComponent & component){
 /**
  * Get Method. Returns the inputBuffer
  */
-const std::vector<unsigned char> & PGMimageProcessor::getInputBuffer() const{
+template <typename T>
+const std::vector<T> & PGMimageProcessor<T>::getInputBuffer() const{
     return inputBuffer;
 }
 
 /**
  * Get Method. Returns width
  */
-int PGMimageProcessor::getWidth() const{
+template <typename T>
+int PGMimageProcessor<T>::getWidth() const{
     return width;
 }
 
 /**
  * Get Method. Returns height
  */
-int PGMimageProcessor::getHeight() const{
+template <typename T>
+int PGMimageProcessor<T>::getHeight() const{
     return height;
 }
 
 /**
  * Get Method. Returns a const referencvcve to components vector
  */
-const std::vector<std::unique_ptr<ConnectedComponent>>& PGMimageProcessor::getComponents() const {
+template <typename T>
+const std::vector<std::unique_ptr<ConnectedComponent>>& PGMimageProcessor<T>::getComponents() const {
     return components;
 }
 
 /**
  * Get Method. returns nextComponentID
  */
-int PGMimageProcessor::getNextComponentID() const{
+template <typename T>
+int PGMimageProcessor<T>::getNextComponentID() const{
     return nextComponentID;
 }
 
+/**
+ * Method that draws the bounding boxes for the components (Mastery)
+ * @param outputname
+ */
+template <typename T>
+bool PGMimageProcessor<T>::drawBoundingBoxes(const std::string & outputName){
+    if (components.empty()) {
+        return false;
+    }
 
+    //Initialise output image inputBuffer filled with 0s
+    std::vector<std::array<unsigned char, 3>> outputBuffer(width * height, {0, 0, 0});
+
+    //Set pixels of components to 255
+    for (const unique_ptr<ConnectedComponent> & component: components){
+        for (const pair<int,int> & pixelCoord: component->getPixels()){
+            int x = pixelCoord.first;
+            int y = pixelCoord.second;
+            outputBuffer[y * width + x] = {255, 255, 255};
+        }
+    }
+
+    //Draw bounding boxes in red
+    for(const unique_ptr<ConnectedComponent> & component: components){
+
+        //Calculate bounding box
+        int minX = width;
+        int maxX = 0;
+        int minY = height;
+        int maxY = 0;
+
+        for (const pair<int,int> & pixelCoord: component->getPixels()){
+            minX = std::min(minX, pixelCoord.first);
+            maxX = std::max(maxX, pixelCoord.first);
+            minY = std::min(minY, pixelCoord.second);
+            maxY = std::max(maxY, pixelCoord.second);
+        }
+
+        //Draw horizontal lines
+        for (int x = minX; x <= maxX; x++){
+            if (minY >= 0 && minY < height) outputBuffer[minY * width + x] = {255, 0, 0};
+            if (maxY >= 0 && maxY < height) outputBuffer[maxY * width + x] = {255, 0, 0};
+        }
+
+        //Draw vertical lines
+        for (int y = minY; y <= maxY; y++) {
+            if (minX >= 0 && minX < width) outputBuffer[y * width + minX] = {255, 0, 0};
+            if (maxX >= 0 && maxX < width) outputBuffer[y * width + maxX] = {255, 0, 0};
+        }
+    }
+
+    //Write to PPM file
+    std::ofstream ofs(outputName, std::ios::binary);
+
+    if (!ofs){
+        cerr << "Unable to open PGM output file " << outputName << endl;
+        return false;
+    }
+    
+    ofs << "P6\n" << width << " " << height << "\n255\n";
+    ofs.write(reinterpret_cast<const char*>(outputBuffer.data()), width * height * 3);
+
+    return true;
+
+}
+
+template class PGMimageProcessor<unsigned char>;
+template class PGMimageProcessor<std::array<unsigned char, 3>>;
 
 

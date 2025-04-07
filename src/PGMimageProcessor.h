@@ -20,10 +20,11 @@
 #ifndef _PGMIP_H
 #define _PGMIP_H
 
+template <typename T>
 class PGMimageProcessor{
 private:
 
-    std::vector<unsigned char> inputBuffer;
+    std::vector<T> inputBuffer;
     int width, height;
     std::vector<std::unique_ptr<ConnectedComponent>> components;
     int nextComponentID;
@@ -85,7 +86,7 @@ public:
      * @param wd: width
      * @param ht: height
      */
-    void setImageData(unsigned char* data, int wd, int ht);
+    void setImageData(T* data, int wd, int ht);
 
     // Core methods
 
@@ -146,13 +147,14 @@ public:
      * @param x: x-coordinate of pixel
      * @param y: y-coordinate of pixel 
      * @param component: the connected component
+     * @param grey: grayscale image data
      */
-    void bfs(int x, int y, ConnectedComponent & component);
+    void bfs(int x, int y, ConnectedComponent & component, std::vector<unsigned char> & grey);
 
     /**
      * Get Method. Returns the inputBuffer
      */
-    const std::vector<unsigned char> & getInputBuffer() const;
+    const std::vector<T> & getInputBuffer() const;
 
     /**
      * Get Method. Returns width
@@ -173,6 +175,12 @@ public:
      * Get Method. returns nextComponentID
      */
     int getNextComponentID() const;
+
+    /**
+     * Method that draws the bounding boxes for the components (Mastery)
+     * @param outputname
+     */
+    bool drawBoundingBoxes(const std::string & outputname);
 
 
 };
