@@ -81,8 +81,8 @@ Run:
 The program will output a PPM/PGM image. You will need to use a tool like pnmtopng to convert it to PNG format
 
 ## 📂 File Structure
-
-/
+```
+CSC3022F-Assignment3/
 ├──📂 src
     ├── 💻 main.cpp     # main driver program
     ├── 📄 PGMimageProcessor.h      # Header file
@@ -99,6 +99,7 @@ The program will output a PPM/PGM image. You will need to use a tool like pnmtop
     .
     .
     (other image files)
+```
 
 ## 🧪 Testing
 
