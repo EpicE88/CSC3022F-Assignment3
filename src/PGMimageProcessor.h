@@ -147,8 +147,9 @@ public:
      * @param x: x-coordinate of pixel
      * @param y: y-coordinate of pixel 
      * @param component: the connected component
+     * @param grey: grayscale image data
      */
-    void bfs(int x, int y, ConnectedComponent & component);
+    void bfs(int x, int y, ConnectedComponent & component, std::vector<unsigned char> & grey);
 
     /**
      * Get Method. Returns the inputBuffer

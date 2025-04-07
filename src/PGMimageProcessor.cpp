@@ -130,7 +130,7 @@ void PGMimageProcessor<T>::setImageData(T* data, int wd, int ht){
 
 
 /**
- * Method that reads PGM image (Specialised for PGM images)
+ * Method that reads PGM image
  * @param fileName: Name of the PGM image being read
  */
 template<>
@@ -242,60 +242,21 @@ void PGMimageProcessor<std::array<unsigned char, 3>>::read(const string& fileNam
  * @param minValidSize: specified minimum valid size of connected components
  * 
  */
-template <>
-int PGMimageProcessor<unsigned char>::extractComponents(unsigned char threshold, int minValidSize){
-
-
-    //Convert grayscale image pixels to 255 or 0
-    for (int i = 0; i < (width * height); i++){
-        if (inputBuffer[i] >= threshold){
-            inputBuffer[i] = 255;
-        }
-        else{
-            inputBuffer[i] = 0;
-        }
-    }
-
-    //Only do BFS on pixels that are 255
-    for (int y = 0; y < height; y++){
-        for (int x = 0; x < width; x++){
-            if (inputBuffer[y * width + x] == 255){
-                ConnectedComponent component;
-
-                bfs(x, y, component);
-
-                // Only store components that are less than greater than minValid size
-                if (component.getNumPixels() >= minValidSize){
-                    //Assign a permanent unique ID to the component
-                    component.setID(nextComponentID++);
-                    components.push_back(std::make_unique<ConnectedComponent>(component));
-                }
-            }
-        }
-    }
-
-    //Delete original image from memory after processing
-    inputBuffer.clear();
-    inputBuffer.shrink_to_fit();
-
-    return components.size();
-
-}
-
-/**
- * Method that extracts all the connected components, based on the supplied threshold and excluding any components
- * less than minValidSize. (Specialised for PPM images)
- * @param threshold: user-defined threshold
- * @param minValidSize: specified minimum valid size of connected components
- * 
- */
-template <>
-int PGMimageProcessor<std::array<unsigned char, 3>>::extractComponents(unsigned char threshold, int minValidSize){
-
+template <typename T>
+int PGMimageProcessor<T>::extractComponents(unsigned char threshold, int minValidSize){
 
     std::vector<unsigned char> grey(width * height);
-    for (int i = 0 ; i < width * height; i++){
-        grey[i] = 0.299f * inputBuffer[i][0] + 0.587f * inputBuffer[i][1] + 0.144f * inputBuffer[i][2];
+
+    grey.resize(width * height);
+    if constexpr (std::is_same_v<T, std::array<unsigned char, 3>>){
+        
+        for (int i = 0; i < width * height; i++){
+            grey[i] = 0.299f * inputBuffer[i][0] + 0.587f * inputBuffer[i][1] + 0.114f * inputBuffer[i][2];
+        }
+        
+    }
+    else{
+        std::copy(inputBuffer.begin(), inputBuffer.end(), grey.begin());
     }
 
     //Convert grayscale image pixels to 255 or 0
@@ -314,7 +275,7 @@ int PGMimageProcessor<std::array<unsigned char, 3>>::extractComponents(unsigned 
             if (grey[y * width + x] == 255){
                 ConnectedComponent component;
 
-                bfs(x, y, component);
+                bfs(x, y, component, grey);
 
                 // Only store components that are less than greater than minValid size
                 if (component.getNumPixels() >= minValidSize){
@@ -330,13 +291,13 @@ int PGMimageProcessor<std::array<unsigned char, 3>>::extractComponents(unsigned 
     inputBuffer.clear();
     inputBuffer.shrink_to_fit();
 
-    //Delete grey from memory
     grey.clear();
     grey.shrink_to_fit();
 
     return components.size();
 
 }
+
 
 /**
  * Method that iterates through container of components and filters all the components which do not obey the size 
@@ -553,7 +514,7 @@ void PGMimageProcessor<T>::printComponentData() const{
  * @param component: the connected component 
  */
 template <typename T>
-void PGMimageProcessor<T>::bfs(int x, int y, ConnectedComponent & component){
+void PGMimageProcessor<T>::bfs(int x, int y, ConnectedComponent & component, std::vector<unsigned char> & grey){
     
     //Initialise the queue
     std::queue<std::pair<int,int>> q;
@@ -562,7 +523,7 @@ void PGMimageProcessor<T>::bfs(int x, int y, ConnectedComponent & component){
     q.push({x, y});
     
     //Mark starting pixel as visited
-    inputBuffer[y * width + x] = 0; 
+    grey[y * width + x] = 0; 
 
     //Process pixels until there are non in the queue
     while(!q.empty()){
@@ -585,8 +546,8 @@ void PGMimageProcessor<T>::bfs(int x, int y, ConnectedComponent & component){
             //Check if neighbour is withn boundaries
             if ((xNeighbour >= 0 && xNeighbour < width) && (yNeighbour >= 0 && yNeighbour < height)){
                 //Check if neighbour is unvisited
-                if (inputBuffer[yNeighbour * width + xNeighbour] == 255){
-                    inputBuffer[yNeighbour * width + xNeighbour] = 0; // mark as visited
+                if (grey[yNeighbour * width + xNeighbour] == 255){
+                    grey[yNeighbour * width + xNeighbour] = 0; // mark as visited
                     q.push(std::make_pair(xNeighbour, yNeighbour));
                 }
             }
