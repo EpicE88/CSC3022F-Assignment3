@@ -599,6 +599,72 @@ int PGMimageProcessor<T>::getNextComponentID() const{
     return nextComponentID;
 }
 
+/**
+ * Method that draws the bounding boxes for the components (Mastery)
+ * @param outputname
+ */
+template <typename T>
+bool PGMimageProcessor<T>::drawBoundingBoxes(const std::string & outputName){
+    if (components.empty()) {
+        return false;
+    }
+
+    //Initialise output image inputBuffer filled with 0s
+    std::vector<std::array<unsigned char, 3>> outputBuffer(width * height, {0, 0, 0});
+
+    //Set pixels of components to 255
+    for (const unique_ptr<ConnectedComponent> & component: components){
+        for (const pair<int,int> & pixelCoord: component->getPixels()){
+            int x = pixelCoord.first;
+            int y = pixelCoord.second;
+            outputBuffer[y * width + x] = {255, 255, 255};
+        }
+    }
+
+    //Draw bounding boxes in red
+    for(const unique_ptr<ConnectedComponent> & component: components){
+
+        //Calculate bounding box
+        int minX = width;
+        int maxX = 0;
+        int minY = height;
+        int maxY = 0;
+
+        for (const pair<int,int> & pixelCoord: component->getPixels()){
+            minX = std::min(minX, pixelCoord.first);
+            maxX = std::max(maxX, pixelCoord.first);
+            minY = std::min(minY, pixelCoord.second);
+            maxY = std::max(maxY, pixelCoord.second);
+        }
+
+        //Draw horizontal lines
+        for (int x = minX; x <= maxX; x++){
+            if (minY >= 0 && minY < height) outputBuffer[minY * width + x] = {255, 0, 0};
+            if (maxY >= 0 && maxY < height) outputBuffer[maxY * width + x] = {255, 0, 0};
+        }
+
+        //Draw vertical lines
+        for (int y = minY; y <= maxY; y++) {
+            if (minX >= 0 && minX < width) outputBuffer[y * width + minX] = {255, 0, 0};
+            if (maxX >= 0 && maxX < width) outputBuffer[y * width + maxX] = {255, 0, 0};
+        }
+    }
+
+    //Write to PPM file
+    std::ofstream ofs(outputName, std::ios::binary);
+
+    if (!ofs){
+        cerr << "Unable to open PGM output file " << outputName << endl;
+        return false;
+    }
+    
+    ofs << "P6\n" << width << " " << height << "\n255\n";
+    ofs.write(reinterpret_cast<const char*>(outputBuffer.data()), width * height * 3);
+
+    return true;
+
+}
+
 template class PGMimageProcessor<unsigned char>;
 template class PGMimageProcessor<std::array<unsigned char, 3>>;
 

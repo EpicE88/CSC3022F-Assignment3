@@ -176,6 +176,12 @@ public:
      */
     int getNextComponentID() const;
 
+    /**
+     * Method that draws the bounding boxes for the components (Mastery)
+     * @param outputname
+     */
+    bool drawBoundingBoxes(const std::string & outputname);
+
 
 };
 

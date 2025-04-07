@@ -39,8 +39,11 @@ int main(int argc, char * argv[]){
     int threshold = 128;   
     bool print = false;
     bool filterFlag = false;        
+    bool boxFlag = false;
+    bool writeFlag = false;
     std::string inFileName;
     std::string outFileName;
+    std::string boxFileName;
 
     // Handle command-line arguments
     for (int i = 1; i < argc; ++i) {
@@ -61,7 +64,21 @@ int main(int argc, char * argv[]){
             print = true;
         }
         else if (arg == "-w" && i + 1 < argc) {
+            if (boxFlag){
+                std::cerr << "Cannot use both -w and -b flags together" << std::endl;
+                return 1;
+            }
+            writeFlag = true;
             outFileName = argv[++i];
+        }
+        else if (arg == "-b") {
+            if (writeFlag){
+                std::cerr << "Cannot use both -w and -b flags together" << std::endl;
+                return 1;
+            }
+
+            boxFlag = true;
+            boxFileName = argv[++i];
         }
         else {
             if (arg[0] != '-') {
@@ -76,10 +93,16 @@ int main(int argc, char * argv[]){
         return 1;
     }
 
-    if (!outFileName.empty() && outFileName[0] == '-') {
+    if (writeFlag && outFileName[0] == '-') {
         std::cerr << "Error: Invalid output filename." << std::endl;
         return 1;
     }
+
+    if (boxFlag && outFileName[0] == '-') {
+        std::cerr << "Error: Invalid output filename." << std::endl;
+        return 1;
+    }
+
         
     std::string extension = getFileExtension(inFileName);
 
@@ -92,7 +115,11 @@ int main(int argc, char * argv[]){
         if (filterFlag)
             imageProcessor.filterComponentsBySize(minSize, maxSize);
 
-        imageProcessor.writeComponents(outFileName);
+        if (writeFlag)
+            imageProcessor.writeComponents(outFileName);
+
+        if (boxFlag)
+            imageProcessor.drawBoundingBoxes(boxFileName);
         
         if (print){
             imageProcessor.printComponentData();
@@ -107,7 +134,12 @@ int main(int argc, char * argv[]){
         if (filterFlag)
             imageProcessor.filterComponentsBySize(minSize, maxSize);
 
+        if (writeFlag)
         imageProcessor.writeComponents(outFileName);
+
+        if (boxFlag)
+            imageProcessor.drawBoundingBoxes(boxFileName);
+        
         
         if (print){
             imageProcessor.printComponentData();
