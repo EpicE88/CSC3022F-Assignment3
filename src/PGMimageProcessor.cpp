@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <climits>
 
 #include "PGMimageProcessor.h"
 
@@ -457,7 +458,7 @@ int PGMimageProcessor<T>::getSmallestSize(void) const{
     if (components.empty())
         return 0;
 
-    int minPixelNum = 999;
+    int minPixelNum = INT_MAX;
 
     for (const unique_ptr<ConnectedComponent> & component: components){
         if (component->getNumPixels() <= minPixelNum){
