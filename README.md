@@ -104,9 +104,10 @@ CSC3022F-Assignment3/
 ## 🧪 Testing
 
 Run unit tests with:
-    ```bash
-    make clean
-    make test
+```bash
+make clean
+make test
+```
 
 ## 📦 Dependencies
 - C++17 compatible
